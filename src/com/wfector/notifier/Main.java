@@ -1,0 +1,342 @@
+package com.wfector.notifier;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.Date;
+
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.plugin.java.JavaPlugin;
+
+import com.Acrobot.ChestShop.Events.TransactionEvent;
+import com.Acrobot.ChestShop.Events.TransactionEvent.TransactionType;
+import com.wfector.command.Clear;
+import com.wfector.command.Help;
+import com.wfector.command.History;
+import com.wfector.util.Time;
+
+import code.husky.mysql.MySQL;
+import static com.Acrobot.Breeze.Utils.MaterialUtil.getSignName;
+
+public class Main extends JavaPlugin implements Listener {
+	
+	MySQL MySQL = new MySQL(this, "mysqllax.fragnet.net", "3306", "xxxx", "xxxx", "xxxx");
+	Connection c = null;
+
+	private Runner runner;
+	private Login login;
+	private ArrayList<String> batch = new ArrayList<String>();
+	private ArrayList<String> users = new ArrayList<String>();
+	
+	public void onEnable() {
+		System.out.println("Connecting to the database...");
+		
+		c = MySQL.openConnection();
+		
+		System.out.println("Connected!");
+		
+		try {
+			Statement statement = c.createStatement();
+			
+			int res = statement.executeUpdate("CREATE TABLE IF NOT EXISTS csn (Id int(11) AUTO_INCREMENT, ShopOwner VARCHAR(1000), Customer VARCHAR(1000), ItemId VARCHAR(1000), Mode INT(11), Amount INT(11), Quantity INT(11), Time INT(11), PRIMARY KEY (Id))");
+			
+			c.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+			
+			this.setEnabled(false);
+		}
+		
+		if(this.isEnabled()) {
+		    this.runner = new Runner(this);
+		    this.runner.runTaskTimer(this, 2000L, 2000L);
+		    
+		    this.login = new Login(this);
+		    this.login.runTaskTimerAsynchronously(this, 5L, 5L);
+		    
+		    getServer().getPluginManager().registerEvents(this, this);
+		}
+	}
+	public void onDisable() {
+		if(batch.size() > 0) {
+			System.out.println("Database queue is not empty. Uploading now...");
+			try {
+				runBatch();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+			System.out.println("Done!");
+		}
+		
+	}
+	
+	@Override
+	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+		if (cmd.getName().equalsIgnoreCase("csn")) {
+			
+			if(args.length == 0) {
+				sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&cCommand usage: /csn help"));
+				return true;
+			}
+			else {
+				if(args[0].equalsIgnoreCase("help")) {
+					Help.SendDialog(sender);
+					return true;
+				}
+				if(args[0].equalsIgnoreCase("history")) {
+					Player target;
+					
+					if(args.length > 1) {
+						if(args.length > 2) {
+							sender.sendMessage(ChatColor.RED + "Too many arguments! /csn history [username]");
+							return true;
+						}
+						
+						target = Bukkit.getPlayer(args[1]);
+					}
+					else {
+						target = (Player) sender;
+					}
+					
+					if(target == null) {
+						sender.sendMessage(ChatColor.RED + "The user '" + args[1] + "' was not found.");
+						return true;
+					}
+					
+					String userName = target.getName();
+					
+					History csh = new History();
+					csh.setUserName(userName);
+					
+					try {
+						csh.gatherResults(MySQL);
+					} catch (SQLException e) {
+						e.printStackTrace();
+					}
+					
+					csh.showResults(sender);
+					
+					return true;
+				}
+				if(args[0].equalsIgnoreCase("upload")) {
+					try {
+						runBatch();
+					} catch (SQLException e) {
+						e.printStackTrace();
+					}
+					sender.sendMessage(ChatColor.RED + "Batch executed!");
+					
+					return true;
+				}
+				if(args[0].equalsIgnoreCase("clear")) {
+					Clear.ClearHistory(MySQL, sender.getName());
+					sender.sendMessage(ChatColor.RED + "History cleared! New sales will continue to be recorded.");
+					
+					return true;
+				}
+			}
+			
+			sender.sendMessage(ChatColor.RED + "Command not recognized. Type /csn help for help.");
+			return true;
+		}
+		
+		return false; 
+	}
+	
+	Main plugin = this;
+	Integer theAmount = 0;
+	ArrayList<String> notifyusers_names = new ArrayList<String>();
+	ArrayList<Integer> notifyusers_sales = new ArrayList<Integer>();
+	ArrayList<Integer> notifyusers_times = new ArrayList<Integer>();
+	
+	@EventHandler
+	public void onPlayerJoinEvent(PlayerJoinEvent e) {
+		debug("User joined. Checking for updates...");
+		
+		final Player p = e.getPlayer();
+		final String pName = p.getName();
+		this.theAmount = 0;
+		
+		getServer().getScheduler().runTaskAsynchronously(this, new Runnable() {
+
+			@Override
+			public void run() {
+				Connection batchConnection;
+				if(!connect()) return;
+				batchConnection = plugin.database;
+				
+				Statement statement = null;
+				try {
+					statement = batchConnection.createStatement();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+				ResultSet res = null;
+				try {
+					res = statement.executeQuery("SELECT `ShopOwner` FROM csn WHERE `ShopOwner`='" + pName + "' AND `Unread`='0'");
+					res.next();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+				
+				Integer amount = 0;
+				try {
+					while(!res.isLast()) {
+						res.next();
+						amount++;
+					}
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+				
+				if(p.isOnline()) {
+					if(amount > 0) {
+						plugin.theAmount = amount;
+					}
+				}
+				
+				try {
+					batchConnection.close();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+				
+				if(theAmount > 0) {
+					Date dt = new Date();
+					Integer SendTime = (int) (dt.getTime() / 1000) + 5;
+					
+					plugin.notifyusers_names.add(pName);
+					plugin.notifyusers_sales.add(theAmount);
+					plugin.notifyusers_times.add(SendTime);
+				}
+			}
+			
+		});
+		
+		debug("Done.");
+	}
+	
+	@EventHandler
+	public boolean onChestShopTransaction(TransactionEvent e) {
+		String ownerName = e.getOwner().getName();
+		TransactionType f = e.getTransactionType();
+		
+		Integer mode = 0;
+		
+		if(f == TransactionType.BUY) { mode = 1; }
+		else { mode = 2; }
+		
+		Integer price = (int) e.getPrice();
+		String clientName = e.getClient().getName();
+
+		StringBuilder items = new StringBuilder(50);
+		Integer itemQuantitys = 0;
+
+        for (ItemStack item : e.getStock()) {
+            items.append(getSignName(item));
+            itemQuantitys = item.getAmount();
+        }
+        
+        String itemId = items.toString();
+        Integer itemQuant = itemQuantitys;
+        
+        batch.add("('" + ownerName + "', '" + clientName + "', '" + itemId + "', '" + mode.toString() + "', '" + price.toString() + "', '" + Time.GetEpochTime() + "', '" + itemQuant.toString() + "', '0')");
+        
+        System.out.println("Item added to batch.");
+        
+		return true;
+	}
+	
+	private Connection database;
+	
+	public boolean connect() {
+	    try
+	    {
+	    	this.database = MySQL.openConnection();
+	    }
+	    catch (Exception e) {
+	    	return false;
+	    }
+		return true;
+	}
+	
+	public void runNotifier() throws SQLException {
+		
+		if(notifyusers_sales.isEmpty()) return;
+		
+		int i = 0;
+		
+		Integer sales = notifyusers_sales.get(i);
+		String username = notifyusers_names.get(i);
+		Integer time = notifyusers_times.get(i);
+
+		Date dt = new Date();
+		Integer CurrentTime = (int) (dt.getTime() / 1000);
+			
+		if(time < CurrentTime) {
+			Player p = Bukkit.getPlayer(username);
+			if(p != null) {
+				p.sendMessage(ChatColor.translateAlternateColorCodes('&', "&a[CSN] &cYou received &a" + sales.toString() + "&c sales since you last checked. To see them, type /csn history."));
+			}
+			notifyusers_sales.clear();
+			notifyusers_times.clear();
+			notifyusers_names.clear();
+		}
+	}
+	
+	public void runBatch() throws SQLException {
+		
+		debug("Running a batch...");
+		
+		if(batch.isEmpty()) return;
+		if(!connect()) return;
+		
+		if(batch.size() > 0) {
+			
+			Connection batchConnection = this.database;
+			
+			String qstr = "INSERT INTO csn (`ShopOwner`, `Customer`, `ItemId`, `Mode`, `Amount`, `Time`, `Quantity`, `Unread`) VALUES ";
+			
+			int i = 0;
+			
+			for(String query : batch) {
+				qstr += query;
+				if(batch.size() > (i+1)) {
+					qstr += ", ";
+				}
+				
+				i++;
+				
+			}
+			
+			Statement statement = batchConnection.createStatement();
+			int res = statement.executeUpdate(qstr);
+			System.out.println("[CSN] Update: " + qstr);
+			
+			batch.clear();
+			
+			batchConnection.close();
+		}
+		else {
+			
+		}
+		
+		debug("Batch completed.");
+	}
+	
+	private void debug(String d) {
+		System.out.println(d);
+	}
+}

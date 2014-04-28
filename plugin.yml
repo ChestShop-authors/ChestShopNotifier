@@ -1,0 +1,11 @@
+main: com.wfector.notifier.Main
+name: ChestShopNotifier
+version: 1.0
+description: §eShows all transactions made in your ChestShops throughout history.
+depend: [ChestShop]
+commands:
+   csn:
+      description: Main ChestShopNotifier command.
+      usage: /csn help:history:clear
+      permission: csn.main
+      permission-message: You don't have permission to do this
