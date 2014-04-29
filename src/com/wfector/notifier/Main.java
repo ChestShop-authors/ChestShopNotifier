@@ -12,6 +12,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -32,15 +33,41 @@ import static com.Acrobot.Breeze.Utils.MaterialUtil.getSignName;
 
 public class Main extends JavaPlugin implements Listener {
 	
-	MySQL MySQL = new MySQL(this, "mysqllax.fragnet.net", "3306", "xxxx", "xxxx", "xxxx");
+	MySQL MySQL;
 	Connection c = null;
 
+	private FileConfiguration config;
 	private Runner runner;
 	private Login login;
 	private ArrayList<String> batch = new ArrayList<String>();
 	private ArrayList<String> users = new ArrayList<String>();
 	
+	private boolean verboseEnabled;
+	private boolean joinNotificationEnabled;
+	private Integer joinNotificationDelay;
+	
+	private String dbHost;
+	private Integer dbPort;
+	private String dbName;
+	private String dbUsername;
+	private String dbPassword;
+	
 	public void onEnable() {
+		this.saveDefaultConfig();
+		this.config = getConfig();
+		
+		verboseEnabled = this.config.getBoolean("debugging.verbose");
+		joinNotificationEnabled = this.config.getBoolean("notifications.notify-on-user-join");
+		joinNotificationDelay = this.config.getInt("notifications.delay-seconds");
+		
+		dbHost = this.config.getString("database.host");
+		dbPort = this.config.getInt("database.port");
+		dbName = this.config.getString("database.dbname");
+		dbUsername = this.config.getString("database.username");
+		dbPassword = this.config.getString("database.password");
+		
+		MySQL = new MySQL(this, dbHost, dbPort.toString(), dbName, dbUsername, dbPassword);
+		
 		System.out.println("Connecting to the database...");
 		
 		c = MySQL.openConnection();
@@ -91,11 +118,11 @@ public class Main extends JavaPlugin implements Listener {
 				return true;
 			}
 			else {
-				if(args[0].equalsIgnoreCase("help")) {
+				if(args[0].equalsIgnoreCase("help") && sender.hasPermission("csn.user")) {
 					Help.SendDialog(sender);
 					return true;
 				}
-				if(args[0].equalsIgnoreCase("history")) {
+				if(args[0].equalsIgnoreCase("history") && sender.hasPermission("csn.user")) {
 					Player target;
 					
 					if(args.length > 1) {
@@ -104,7 +131,13 @@ public class Main extends JavaPlugin implements Listener {
 							return true;
 						}
 						
-						target = Bukkit.getPlayer(args[1]);
+						if(sender.hasPermission("csn.history.others") || sender.isOp() || sender.hasPermission("csn.admin")) {
+							target = Bukkit.getPlayer(args[1]);
+						}
+						else {
+							sender.sendMessage(ChatColor.RED + "Too many arguments! /csn history");
+							return true;
+						}
 					}
 					else {
 						target = (Player) sender;
@@ -130,7 +163,7 @@ public class Main extends JavaPlugin implements Listener {
 					
 					return true;
 				}
-				if(args[0].equalsIgnoreCase("upload")) {
+				if(args[0].equalsIgnoreCase("upload") && sender.hasPermission("csn.admin")) {
 					try {
 						runBatch();
 					} catch (SQLException e) {
@@ -140,7 +173,7 @@ public class Main extends JavaPlugin implements Listener {
 					
 					return true;
 				}
-				if(args[0].equalsIgnoreCase("clear")) {
+				if(args[0].equalsIgnoreCase("clear") && sender.hasPermission("csn.user")) {
 					Clear.ClearHistory(MySQL, sender.getName());
 					sender.sendMessage(ChatColor.RED + "History cleared! New sales will continue to be recorded.");
 					
@@ -163,13 +196,15 @@ public class Main extends JavaPlugin implements Listener {
 	
 	@EventHandler
 	public void onPlayerJoinEvent(PlayerJoinEvent e) {
+		if(joinNotificationEnabled == false) return;
+		
 		debug("User joined. Checking for updates...");
 		
 		final Player p = e.getPlayer();
 		final String pName = p.getName();
 		this.theAmount = 0;
 		
-		getServer().getScheduler().runTaskAsynchronously(this, new Runnable() {
+		Bukkit.getScheduler().runTaskAsynchronously(this, new Runnable() {
 
 			@Override
 			public void run() {
@@ -186,6 +221,7 @@ public class Main extends JavaPlugin implements Listener {
 				ResultSet res = null;
 				try {
 					res = statement.executeQuery("SELECT `ShopOwner` FROM csn WHERE `ShopOwner`='" + pName + "' AND `Unread`='0'");
+					
 					res.next();
 				} catch (SQLException e) {
 					e.printStackTrace();
@@ -193,9 +229,10 @@ public class Main extends JavaPlugin implements Listener {
 				
 				Integer amount = 0;
 				try {
-					while(!res.isLast()) {
-						res.next();
+					if(res.getMetaData().getColumnCount() > 0)
+					while(res.next()) {
 						amount++;
+						debug("Next row (" + amount.toString() + ");");
 					}
 				} catch (SQLException e) {
 					e.printStackTrace();
@@ -213,9 +250,9 @@ public class Main extends JavaPlugin implements Listener {
 					e.printStackTrace();
 				}
 				
-				if(theAmount > 0) {
+				if(theAmount > 0 && p.isOnline()) {
 					Date dt = new Date();
-					Integer SendTime = (int) (dt.getTime() / 1000) + 5;
+					Integer SendTime = (int) (dt.getTime() / 1000) + joinNotificationDelay;
 					
 					plugin.notifyusers_names.add(pName);
 					plugin.notifyusers_sales.add(theAmount);
@@ -337,6 +374,8 @@ public class Main extends JavaPlugin implements Listener {
 	}
 	
 	private void debug(String d) {
-		System.out.println(d);
+		if(verboseEnabled) {
+			System.out.println(d);
+		}
 	}
 }

@@ -7,5 +7,21 @@ commands:
    csn:
       description: Main ChestShopNotifier command.
       usage: /csn help:history:clear
-      permission: csn.main
-      permission-message: You don't have permission to do this
+      permission: csn.user
+      permission-message: No permission
+permissions:
+    csn.*:
+        description: Gives access to all ChestShop Notifier commands
+        children:
+            csn.user: true
+            csn.admin: true
+            csn.history.others: true
+    csn.user:
+        description: Basic commands for any user
+        default: true
+    csn.admin:
+        description: Access to high-end commands
+        default: op
+    csn.history.others:
+        description: Allow lookups on other users
+        default: op
