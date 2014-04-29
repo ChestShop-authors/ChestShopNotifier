@@ -52,9 +52,12 @@ public class Main extends JavaPlugin implements Listener {
 	private String dbUsername;
 	private String dbPassword;
 	
+	boolean pluginEnabled = false;
+	
 	public void onEnable() {
 		this.saveDefaultConfig();
 		this.config = getConfig();
+		
 		
 		verboseEnabled = this.config.getBoolean("debugging.verbose");
 		joinNotificationEnabled = this.config.getBoolean("notifications.notify-on-user-join");
@@ -73,10 +76,12 @@ public class Main extends JavaPlugin implements Listener {
 		c = MySQL.openConnection();
 		
 		if(c == null) {
-			System.out.println("Failed to connect to the database! Stopping plugin!");
-			this.setEnabled(false);
+			System.out.println("Failed to connect to the database! Disabling connections!");
+			
 			return;
 		}
+		
+		pluginEnabled = true;
 		
 		System.out.println("Connected!");
 		
@@ -93,7 +98,7 @@ public class Main extends JavaPlugin implements Listener {
 			return;
 		}
 		
-		if(this.isEnabled()) {
+		if(this.isEnabled() && pluginEnabled) {
 		    this.runner = new Runner(this);
 		    this.runner.runTaskTimer(this, 2000L, 2000L);
 		    
@@ -131,6 +136,11 @@ public class Main extends JavaPlugin implements Listener {
 				}
 				if(args[0].equalsIgnoreCase("history") && sender.hasPermission("csn.user")) {
 					Player target;
+					
+					if(pluginEnabled == false) {
+						sender.sendMessage(ChatColor.RED + "Invalid database connection. Please edit config and /csn reload.");
+						return true;
+					}
 					
 					if(args.length > 1) {
 						if(args.length > 2) {
@@ -171,6 +181,11 @@ public class Main extends JavaPlugin implements Listener {
 					return true;
 				}
 				if(args[0].equalsIgnoreCase("upload") && sender.hasPermission("csn.admin")) {
+					if(pluginEnabled == false) {
+						sender.sendMessage(ChatColor.RED + "Invalid database connection. Please edit config and /csn reload.");
+						return true;
+					}
+					
 					try {
 						runBatch();
 					} catch (SQLException e) {
@@ -181,6 +196,11 @@ public class Main extends JavaPlugin implements Listener {
 					return true;
 				}
 				if(args[0].equalsIgnoreCase("clear") && sender.hasPermission("csn.user")) {
+					if(pluginEnabled == false) {
+						sender.sendMessage(ChatColor.RED + "Invalid database connection. Please edit config and /csn reload.");
+						return true;
+					}
+					
 					Clear.ClearHistory(MySQL, sender.getName());
 					sender.sendMessage(ChatColor.RED + "History cleared! New sales will continue to be recorded.");
 					
@@ -210,6 +230,8 @@ public class Main extends JavaPlugin implements Listener {
 		final Player p = e.getPlayer();
 		final String pName = p.getName();
 		this.theAmount = 0;
+
+		if(!pluginEnabled) return;
 		
 		Bukkit.getScheduler().runTaskAsynchronously(this, new Runnable() {
 
@@ -319,6 +341,7 @@ public class Main extends JavaPlugin implements Listener {
 	public void runNotifier() throws SQLException {
 		
 		if(notifyusers_sales.isEmpty()) return;
+		if(!pluginEnabled) return;
 		
 		int i = 0;
 		
@@ -345,6 +368,7 @@ public class Main extends JavaPlugin implements Listener {
 		debug("Running a batch...");
 		
 		if(batch.isEmpty()) return;
+		if(!pluginEnabled) return;
 		if(!connect()) return;
 		
 		if(batch.size() > 0) {
