@@ -72,6 +72,12 @@ public class Main extends JavaPlugin implements Listener {
 		
 		c = MySQL.openConnection();
 		
+		if(c == null) {
+			System.out.println("Failed to connect to the database! Stopping plugin!");
+			this.setEnabled(false);
+			return;
+		}
+		
 		System.out.println("Connected!");
 		
 		try {
@@ -84,6 +90,7 @@ public class Main extends JavaPlugin implements Listener {
 			e.printStackTrace();
 			
 			this.setEnabled(false);
+			return;
 		}
 		
 		if(this.isEnabled()) {
