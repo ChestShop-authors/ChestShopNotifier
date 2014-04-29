@@ -45,9 +45,7 @@ public class History {
 		
 		ResultSet res = statement.executeQuery("SELECT * FROM `csn` WHERE `ShopOwner`='" + this.userName + "' AND `Unread`='0' ORDER BY `Id` DESC LIMIT 1000");
 		
-		while(res.isLast() != true) {
-			res.next();
-			
+		while(res.next()) {
 			index++;
 			
 			historyUsers.add(res.getString("Customer"));
