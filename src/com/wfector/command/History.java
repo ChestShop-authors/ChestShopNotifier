@@ -7,12 +7,12 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collections;
 
-import org.apache.commons.lang.ArrayUtils;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 
 import code.husky.mysql.MySQL;
 
+import com.wfector.notifier.Main;
 import com.wfector.util.ItemConverter;
 import com.wfector.util.Time;
 
@@ -27,8 +27,6 @@ public class History {
 	private ArrayList<Integer> historyTimes = new ArrayList<Integer>();
 	private ArrayList<Integer> historyModes = new ArrayList<Integer>();
 	private ArrayList<Integer> historyQuantities = new ArrayList<Integer>();
-	
-	private ArrayList<String> messages = new ArrayList<String>();
 	
 	private int index = 0;
 	
@@ -57,15 +55,41 @@ public class History {
 		}
 	}
 	
+	public Integer HasData(ArrayList<String[]> data, String[] search) {
+		int v = 0;
+		for(String[] arr : data) {
+			int i = 0;
+			boolean match = false;
+			
+			for(String s : search) {
+				if(i != 3) {
+					if(arr[i].equalsIgnoreCase(s)) {
+						match = true;
+					}
+					else {
+						//System.out.println("[Matching] '" + arr[i] + "' does not match '" + s + "'");
+						match = false;
+					}
+				}
+				i++;
+			}
+			
+			if(match == true) {
+				return v;
+			}
+			
+			v++;
+		}
+		
+		return -1;
+	}
+	
 	public void showResults(CommandSender sender) {
 		sender.sendMessage(ChatColor.LIGHT_PURPLE + "ChestShop Notifier // " + ChatColor.GRAY + "Latest Commissions");
 		sender.sendMessage("");
 		
 		index = 0;
 		int lines = 0;
-		String lastString = "";
-		String lastRealString = "";
-		Integer repeats = 0;
 		
 		if(historyUsers.isEmpty()) {
 			sender.sendMessage(ChatColor.RED + "Nothing to show.");
@@ -73,78 +97,84 @@ public class History {
 			return;
 		}
 		
+		ArrayList<String[]> data = new ArrayList<String[]>();
+		ArrayList<Integer> times = new ArrayList<Integer>();
+		
 		for(String userName : historyUsers) {
 			Integer amount = historyAmounts.get(index);
 			String itemId = historyItems.get(index);
 			Integer time = historyTimes.get(index);
 			Integer mode = historyModes.get(index);
 			Integer quantity = historyQuantities.get(index);
+
+			itemId = ItemConverter.GetItemName(itemId);
+			
+			String[] arr = {
+				userName,
+				amount.toString(),
+				itemId,
+				time.toString(),
+				mode.toString(),
+				quantity.toString()
+			};
 			
 			if(lines < this.maxRows) {
-				itemId = ItemConverter.GetItemName(itemId);
-				
-				String newMessage = "";
-				
-				if(mode == 1) {
-					newMessage = ChatColor.YELLOW + userName + ChatColor.GRAY + " bought ";
-					newMessage += ChatColor.AQUA + quantity.toString() + "x" + itemId;
-					newMessage += ChatColor.GRAY + " for $" + amount.toString();
-					newMessage += ChatColor.GRAY + " (" + (Time.GetAgo(time)) + " ago)";
-				}
-				if(mode == 2) {
-					newMessage = ChatColor.YELLOW + userName + ChatColor.GRAY + " sold you ";
-					newMessage += ChatColor.AQUA + quantity.toString() + "x" + itemId;
-					newMessage += ChatColor.GRAY + " for $" + amount.toString();
-					newMessage += ChatColor.GRAY + " (" + (Time.GetAgo(time)) + " ago)";
-				}
-				
-				if(newMessage != "") {
-					String strippedString1 = newMessage;
-					Integer beginTimeLocation = strippedString1.indexOf("(");
-					strippedString1 = strippedString1.substring(0, beginTimeLocation);
-					
-					if(lastString.equalsIgnoreCase(strippedString1)) {
-						repeats++;
-					}
-					else {
-						if(repeats > 0) {
-							System.out.println("Match");
-							
-							repeats++;
-							messages.add(lastRealString + ChatColor.GREEN + " [x" + repeats.toString() + "]");
-							lines++;
-							repeats = 0;
-						}
-						else {
-							System.out.println("No Match");
-							
-							if(lastString != "") 
-								messages.add(lastRealString);
-							lines++;
-						}
-					}
-					
-					lastString = strippedString1;
-					lastRealString = newMessage;
+				Integer hasData = HasData(data, arr);
+				if(hasData > -1) {
+					times.set(hasData, times.get(hasData) + 1);
 				}
 				else {
-					System.out.println("Error. An entry had an invalid mode (expected 1 or 2, got " + mode.toString() + ")");
+					data.add(arr);
+					times.add(1);
+					lines++;
 				}
 				
 				index++;
 			}
 		}
 
-		if(repeats > 0) {
-			messages.add(lastRealString + ChatColor.GREEN + " [x" + repeats.toString() + "]");
-			repeats = 0;
-			lines++;
-		}
+		Collections.reverse(data);
+		Collections.reverse(times);
 		
-		Collections.reverse(messages);
+		int i = 0;
 		
-		for(String m : messages) {
-			sender.sendMessage(m);
+		for(String[] arr : data) {
+			Integer Multiplier = times.get(i);
+
+			if(Integer.parseInt(arr[4]) == 1) {
+				Integer totalBought = Integer.parseInt(arr[5]);
+				totalBought = totalBought * (Multiplier);
+				
+				Integer Money = Integer.parseInt(arr[1]) * Multiplier;
+				
+				String msgString = "+ ";
+				msgString += ChatColor.BLUE + arr[0] + " ";
+				msgString += ChatColor.GRAY + "bought ";
+				msgString += ChatColor.GREEN + (totalBought.toString()) + "x";
+				msgString += ChatColor.BLUE + arr[2].replace(" ", "") + " ";
+				msgString += ChatColor.WHITE + Time.GetAgo(Integer.parseInt(arr[3])) + " ago ";
+				msgString += ChatColor.GRAY + "(+ $" + Money.toString() + ")";
+				
+				sender.sendMessage(msgString);
+			}
+			if(Integer.parseInt(arr[4]) == 2) {
+				Integer totalBought = Integer.parseInt(arr[5]);
+				totalBought = totalBought * (Multiplier);
+				
+				Integer Money = Integer.parseInt(arr[1]) * Multiplier;
+				
+				String msgString = "- ";
+				msgString += ChatColor.BLUE + arr[0] + " ";
+				msgString += ChatColor.GRAY + "sold you ";
+				msgString += ChatColor.GREEN + (totalBought.toString()) + "x";
+				msgString += ChatColor.BLUE + arr[2].replace(" ", "") + " ";
+				msgString += ChatColor.WHITE + Time.GetAgo(Integer.parseInt(arr[3])) + " ago ";
+				msgString += ChatColor.GRAY + "(- $" + Money.toString() + ")";
+				
+				sender.sendMessage(msgString);
+			}
+			
+			i++;
 		}
 		
 		sender.sendMessage(" ");
