@@ -1,0 +1,17 @@
+# Chest Shop Notifier
+# Config file for 1.0.0
+# August 28 2014
+
+notifications:
+  notify-on-user-join: true
+  delay-seconds: 5
+
+debugging:
+  verbose: false
+
+database:
+  host: 'localhost'
+  port: 3306
+  dbname: 'database1'
+  username: 'dbadmin'
+  password: '123456'
