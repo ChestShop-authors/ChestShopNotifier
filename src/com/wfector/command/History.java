@@ -67,6 +67,12 @@ public class History {
 		String lastRealString = "";
 		Integer repeats = 0;
 		
+		if(historyUsers.isEmpty()) {
+			sender.sendMessage(ChatColor.RED + "Nothing to show.");
+			
+			return;
+		}
+		
 		for(String userName : historyUsers) {
 			Integer amount = historyAmounts.get(index);
 			String itemId = historyItems.get(index);
