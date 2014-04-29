@@ -1,5 +1,7 @@
 package com.wfector.notifier;
 
+import java.io.File;
+import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -13,6 +15,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -54,10 +57,13 @@ public class Main extends JavaPlugin implements Listener {
 	
 	boolean pluginEnabled = false;
 	
-	public void onEnable() {
-		this.saveDefaultConfig();
-		this.config = getConfig();
+	private FileConfiguration customConfig = null;
+	private File customConfigFile = null;
+	
+	public boolean updateConfiguration(boolean isReload) {
+		if(isReload) reloadCustomConfig();
 		
+		this.config = getCustomConfig();
 		
 		verboseEnabled = this.config.getBoolean("debugging.verbose");
 		joinNotificationEnabled = this.config.getBoolean("notifications.notify-on-user-join");
@@ -68,8 +74,30 @@ public class Main extends JavaPlugin implements Listener {
 		dbName = this.config.getString("database.dbname");
 		dbUsername = this.config.getString("database.username");
 		dbPassword = this.config.getString("database.password");
+				
+		if(isReload) { 
+			MySQL = new MySQL(this, dbHost, dbPort.toString(), dbName, dbUsername, dbPassword);
+			
+			System.out.println("Connecting to the database...");
+			
+			c = MySQL.openConnection();
+			
+			if(c == null) {
+				System.out.println("Failed to connect to the database! Disabling connections!");
+				
+				pluginEnabled = false;
+				return false;
+			}
+			
+			pluginEnabled = true;
+		}
 		
-		MySQL = new MySQL(this, dbHost, dbPort.toString(), dbName, dbUsername, dbPassword);
+		return true;
+	}
+	
+	public void onEnable() {
+		saveDefaultConfig();
+		updateConfiguration(true);
 		
 		System.out.println("Connecting to the database...");
 		
@@ -130,6 +158,22 @@ public class Main extends JavaPlugin implements Listener {
 				return true;
 			}
 			else {
+				if(args[0].equalsIgnoreCase("reload") && (sender.hasPermission("csn.admin") || sender.isOp())) {
+					sender.sendMessage(ChatColor.LIGHT_PURPLE + "ChestShop Notifier // " + ChatColor.GRAY + "Reloading, please wait...");
+					
+					boolean didUpdate = updateConfiguration(true);
+					if(didUpdate) {
+						sender.sendMessage(ChatColor.LIGHT_PURPLE + "ChestShop Notifier // " + ChatColor.GREEN + "Reloaded!");
+						sender.sendMessage(ChatColor.LIGHT_PURPLE + "ChestShop Notifier // " + ChatColor.GREEN + "Database connected!");
+						
+					}
+					else {
+						sender.sendMessage(ChatColor.LIGHT_PURPLE + "ChestShop Notifier // " + ChatColor.GREEN + "Reloaded!");
+						sender.sendMessage(ChatColor.LIGHT_PURPLE + "ChestShop Notifier // " + ChatColor.RED + "Database failed to connect!");
+					}
+					
+					return true;
+				}
 				if(args[0].equalsIgnoreCase("help") && sender.hasPermission("csn.user")) {
 					Help.SendDialog(sender);
 					return true;
@@ -223,7 +267,10 @@ public class Main extends JavaPlugin implements Listener {
 	
 	@EventHandler
 	public void onPlayerJoinEvent(PlayerJoinEvent e) {
-		if(joinNotificationEnabled == false) return;
+		if(joinNotificationEnabled == false) {
+			debug("Join notifications are " + joinNotificationEnabled + ", skipping...");
+			return;
+		}
 		
 		debug("User joined. Checking for updates...");
 		
@@ -408,5 +455,32 @@ public class Main extends JavaPlugin implements Listener {
 		if(verboseEnabled) {
 			System.out.println(d);
 		}
+	}
+	
+	public void reloadCustomConfig() {
+	    if (customConfigFile == null) {
+	    customConfigFile = new File(getDataFolder(), "config.yml");
+	    }
+	    customConfig = YamlConfiguration.loadConfiguration(customConfigFile);
+	 
+	    InputStream defConfigStream = this.getResource("config.yml");
+	    if (defConfigStream != null) {
+	        YamlConfiguration defConfig = YamlConfiguration.loadConfiguration(defConfigStream);
+	        customConfig.setDefaults(defConfig);
+	    }
+	}
+	public FileConfiguration getCustomConfig() {
+	    if (customConfig == null) {
+	        reloadCustomConfig();
+	    }
+	    return customConfig;
+	}
+	public void saveDefaultConfig() {
+	    if (customConfigFile == null) {
+	        customConfigFile = new File(getDataFolder(), "config.yml");
+	    }
+	    if (!customConfigFile.exists()) {            
+	         plugin.saveResource("config.yml", false);
+	     }
 	}
 }
