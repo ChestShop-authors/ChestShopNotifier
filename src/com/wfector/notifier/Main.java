@@ -27,6 +27,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import com.Acrobot.ChestShop.Events.TransactionEvent;
 import com.Acrobot.ChestShop.Events.TransactionEvent.TransactionType;
 import com.wfector.command.Clear;
+import com.wfector.command.CommandRunner;
 import com.wfector.command.Help;
 import com.wfector.command.History;
 import com.wfector.util.Time;
@@ -36,7 +37,7 @@ import static com.Acrobot.Breeze.Utils.MaterialUtil.getSignName;
 
 public class Main extends JavaPlugin implements Listener {
 	
-	MySQL MySQL;
+	public MySQL MySQL;
 	Connection c = null;
 
 	private FileConfiguration config;
@@ -55,7 +56,7 @@ public class Main extends JavaPlugin implements Listener {
 	private String dbUsername;
 	private String dbPassword;
 	
-	boolean pluginEnabled = false;
+	public boolean pluginEnabled = false;
 	
 	private FileConfiguration customConfig = null;
 	private File customConfigFile = null;
@@ -153,107 +154,12 @@ public class Main extends JavaPlugin implements Listener {
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
 		if (cmd.getName().equalsIgnoreCase("csn")) {
 			
-			if(args.length == 0) {
-				sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&cCommand usage: /csn help"));
-				return true;
-			}
-			else {
-				if(args[0].equalsIgnoreCase("reload") && (sender.hasPermission("csn.admin") || sender.isOp())) {
-					sender.sendMessage(ChatColor.LIGHT_PURPLE + "ChestShop Notifier // " + ChatColor.GRAY + "Reloading, please wait...");
-					
-					boolean didUpdate = updateConfiguration(true);
-					if(didUpdate) {
-						sender.sendMessage(ChatColor.LIGHT_PURPLE + "ChestShop Notifier // " + ChatColor.GREEN + "Reloaded!");
-						sender.sendMessage(ChatColor.LIGHT_PURPLE + "ChestShop Notifier // " + ChatColor.GREEN + "Database connected!");
-						
-					}
-					else {
-						sender.sendMessage(ChatColor.LIGHT_PURPLE + "ChestShop Notifier // " + ChatColor.GREEN + "Reloaded!");
-						sender.sendMessage(ChatColor.LIGHT_PURPLE + "ChestShop Notifier // " + ChatColor.RED + "Database failed to connect!");
-					}
-					
-					return true;
-				}
-				if(args[0].equalsIgnoreCase("help") && sender.hasPermission("csn.user")) {
-					Help.SendDialog(sender);
-					return true;
-				}
-				if(args[0].equalsIgnoreCase("history") && sender.hasPermission("csn.user")) {
-					Player target;
-					
-					if(pluginEnabled == false) {
-						sender.sendMessage(ChatColor.RED + "Invalid database connection. Please edit config and /csn reload.");
-						return true;
-					}
-					
-					if(args.length > 1) {
-						if(args.length > 2) {
-							sender.sendMessage(ChatColor.RED + "Too many arguments! /csn history [username]");
-							return true;
-						}
-						
-						if(sender.hasPermission("csn.history.others") || sender.isOp() || sender.hasPermission("csn.admin")) {
-							target = Bukkit.getPlayer(args[1]);
-						}
-						else {
-							sender.sendMessage(ChatColor.RED + "Too many arguments! /csn history");
-							return true;
-						}
-					}
-					else {
-						target = (Player) sender;
-					}
-					
-					if(target == null) {
-						sender.sendMessage(ChatColor.RED + "The user '" + args[1] + "' was not found.");
-						return true;
-					}
-					
-					String userName = target.getName();
-					
-					History csh = new History();
-					csh.setUserName(userName);
-					
-					try {
-						csh.gatherResults(MySQL);
-					} catch (SQLException e) {
-						e.printStackTrace();
-					}
-					
-					csh.showResults(sender);
-					
-					return true;
-				}
-				if(args[0].equalsIgnoreCase("upload") && sender.hasPermission("csn.admin")) {
-					if(pluginEnabled == false) {
-						sender.sendMessage(ChatColor.RED + "Invalid database connection. Please edit config and /csn reload.");
-						return true;
-					}
-					
-					try {
-						runBatch();
-					} catch (SQLException e) {
-						e.printStackTrace();
-					}
-					sender.sendMessage(ChatColor.RED + "Batch executed!");
-					
-					return true;
-				}
-				if(args[0].equalsIgnoreCase("clear") && sender.hasPermission("csn.user")) {
-					if(pluginEnabled == false) {
-						sender.sendMessage(ChatColor.RED + "Invalid database connection. Please edit config and /csn reload.");
-						return true;
-					}
-					
-					Clear.ClearHistory(MySQL, sender.getName());
-					sender.sendMessage(ChatColor.RED + "History cleared! New sales will continue to be recorded.");
-					
-					return true;
-				}
-			}
+			CommandRunner c = new CommandRunner();
+			c.SetPlugin(this);
+			c.Process(sender, cmd, label, args);
 			
-			sender.sendMessage(ChatColor.RED + "Command not recognized. Type /csn help for help.");
 			return true;
+			
 		}
 		
 		return false; 
@@ -308,7 +214,6 @@ public class Main extends JavaPlugin implements Listener {
 					if(res.getMetaData().getColumnCount() > 0)
 					while(res.next()) {
 						amount++;
-						debug("Next row (" + amount.toString() + ");");
 					}
 				} catch (SQLException e) {
 					e.printStackTrace();
@@ -451,7 +356,7 @@ public class Main extends JavaPlugin implements Listener {
 		debug("Batch completed.");
 	}
 	
-	private void debug(String d) {
+	public void debug(String d) {
 		if(verboseEnabled) {
 			System.out.println(d);
 		}

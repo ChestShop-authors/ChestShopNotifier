@@ -1,5 +1,7 @@
 package com.wfector.command;
 
+import java.util.ArrayList;
+
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 
@@ -7,19 +9,21 @@ public class Help {
 
 	public static void SendDialog(CommandSender sender) {
 		
-		String[] helpItems = {
-			"&c--------------- ChestShop Notifier ---------------",
-			"&c ",
-			"&c /csn history   &7See all of your recent transactions",
-			"&c /csn clear     &7Clear all transaction history"
-		};
+		ArrayList<String> helpItems = new ArrayList<String>();
+		
+		helpItems.add("&dChestShop Notifier // &7Commands");
+		helpItems.add("&c ");
+		helpItems.add("&7- /csn &dhelp &f- Plugin usage & commands");
+		helpItems.add("&7- /csn &dhistory &f- View unread sales");
+		helpItems.add("&7- /csn &dclear &f- Mark all sales as read");
+		
+		if(sender.isOp() || sender.hasPermission("csn.admin")) {
+			helpItems.add("&c ");
+			helpItems.add("&7- /csn &dupload &f- Force update databases");
+			helpItems.add("&7- /csn &dreload &f- Reload configuration");
+		}
 		
 		for(String item : helpItems) {
-			if(item == "&c /csn history   &7See all of your recent transactions") {
-				if(sender.isOp()) {
-					item = "&c /csn history (username)  &7See all of your recent transactions";
-				}
-			}
 			sender.sendMessage(ChatColor.translateAlternateColorCodes('&', item));
 		}
 		
