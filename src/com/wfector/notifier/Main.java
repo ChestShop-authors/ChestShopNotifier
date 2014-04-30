@@ -179,7 +179,10 @@ public class Main extends JavaPlugin implements Listener {
 		final String pName = p.getName();
 		this.theAmount = 0;
 
-		if(!pluginEnabled) return;
+		if(!pluginEnabled) {
+			debug("Cannot notify user. Plugin is disabled.");
+			return;
+		}
 		
 		Bukkit.getScheduler().runTaskAsynchronously(this, new Runnable() {
 
@@ -303,7 +306,12 @@ public class Main extends JavaPlugin implements Listener {
 			Player p = Bukkit.getPlayer(username);
 			if(p != null) {
 				debug("[NotifierQueue] Ran for user '" + username + "'");
-				p.sendMessage(ChatColor.translateAlternateColorCodes('&', "&a[CSN] &cYou received &a" + sales.toString() + "&c sales since you last checked. To see them, type /csn history."));
+				p.sendMessage(ChatColor.translateAlternateColorCodes('&', 
+						"&c ** You made &f" + sales.toString() + " sales&c since you last checked.")
+					);
+				p.sendMessage(ChatColor.translateAlternateColorCodes('&', 
+						"&c ** To see them, type &f/csn history&c.")
+					);
 			}
 			else {
 				debug("Warning: The player '" + username + "' could not be found, yet was in queue.");
