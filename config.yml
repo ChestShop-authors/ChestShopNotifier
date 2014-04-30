@@ -7,7 +7,7 @@ notifications:
   delay-seconds: 5
 
 debugging:
-  verbose: false
+  verbose: true
 
 database:
   host: 'localhost'
