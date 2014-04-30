@@ -126,7 +126,7 @@ public class Main extends JavaPlugin implements Listener {
 		    this.runner.runTaskTimer(this, 2000L, 2000L);
 		    
 		    this.login = new Login(this);
-		    this.login.runTaskTimerAsynchronously(this, 5L, 5L);
+		    this.login.runTaskTimerAsynchronously(this, 60L, 60L);
 		    
 		    getServer().getPluginManager().registerEvents(this, this);
 		}
@@ -205,10 +205,12 @@ public class Main extends JavaPlugin implements Listener {
 				
 				Integer amount = 0;
 				try {
-					if(res.getMetaData().getColumnCount() > 0)
+					if(res.getMetaData().getColumnCount() > 0) {
 					while(res.next()) {
 						amount++;
 					}
+					}
+					debug("Found rows: " + amount.toString());
 				} catch (SQLException e) {
 					e.printStackTrace();
 				}
@@ -227,6 +229,7 @@ public class Main extends JavaPlugin implements Listener {
 				
 				if(theAmount > 0 && p.isOnline()) {
 					Date dt = new Date();
+					debug("Added message to queue (delay s: " + joinNotificationDelay + ")");
 					Integer SendTime = (int) (dt.getTime() / 1000) + joinNotificationDelay;
 					
 					plugin.notifyusers_names.add(pName);
@@ -292,22 +295,19 @@ public class Main extends JavaPlugin implements Listener {
 		
 		int i = 0;
 		
-		Integer sales = notifyusers_sales.get(i);
-		String username = notifyusers_names.get(i);
-		Integer time = notifyusers_times.get(i);
-
-		Date dt = new Date();
-		Integer CurrentTime = (int) (dt.getTime() / 1000);
-			
-		if(time < CurrentTime) {
+		for(String username : notifyusers_names) {
+			Integer sales = notifyusers_sales.get(i);
+		
+			Date dt = new Date();
+				
 			Player p = Bukkit.getPlayer(username);
 			if(p != null) {
 				p.sendMessage(ChatColor.translateAlternateColorCodes('&', "&a[CSN] &cYou received &a" + sales.toString() + "&c sales since you last checked. To see them, type /csn history."));
 			}
-			notifyusers_sales.clear();
-			notifyusers_times.clear();
-			notifyusers_names.clear();
 		}
+		
+		notifyusers_names.clear();
+		notifyusers_sales.clear();
 	}
 	
 	public void runBatch() throws SQLException {
