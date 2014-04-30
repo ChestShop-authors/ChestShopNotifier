@@ -51,6 +51,7 @@ public class Main extends JavaPlugin implements Listener {
 	private String dbPassword;
 	
 	public boolean pluginEnabled = false;
+	public boolean newNotifications = false;
 	
 	private FileConfiguration customConfig = null;
 	private File customConfigFile = null;
@@ -235,6 +236,7 @@ public class Main extends JavaPlugin implements Listener {
 					plugin.notifyusers_names.add(pName);
 					plugin.notifyusers_sales.add(theAmount);
 					plugin.notifyusers_times.add(SendTime);
+					plugin.newNotifications = true;
 				}
 			}
 			
@@ -290,24 +292,29 @@ public class Main extends JavaPlugin implements Listener {
 	@SuppressWarnings("deprecation")
 	public void runNotifier() throws SQLException {
 		
-		if(notifyusers_sales.isEmpty()) return;
+		if(!newNotifications) return;
 		if(!pluginEnabled) return;
 		
 		int i = 0;
 		
 		for(String username : notifyusers_names) {
 			Integer sales = notifyusers_sales.get(i);
-		
-			Date dt = new Date();
 				
 			Player p = Bukkit.getPlayer(username);
 			if(p != null) {
+				debug("[NotifierQueue] Ran for user '" + username + "'");
 				p.sendMessage(ChatColor.translateAlternateColorCodes('&', "&a[CSN] &cYou received &a" + sales.toString() + "&c sales since you last checked. To see them, type /csn history."));
 			}
+			else {
+				debug("Warning: The player '" + username + "' could not be found, yet was in queue.");
+			}
 		}
-		
+
+		debug("[NotifierQueue] Finished.");
 		notifyusers_names.clear();
 		notifyusers_sales.clear();
+		
+		newNotifications = false;
 	}
 	
 	public void runBatch() throws SQLException {
