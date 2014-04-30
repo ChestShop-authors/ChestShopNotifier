@@ -55,29 +55,24 @@ public class History {
 	}
 	
 	public Integer HasData(ArrayList<String[]> data, String[] search) {
-		int v = 0;
+		
+		int i = 0;
+		
 		for(String[] arr : data) {
-			int i = 0;
 			boolean match = false;
+	
+			if(arr[0].equalsIgnoreCase(search[0])) match = true;
+			else match = false;
 			
-			for(String s : search) {
-				if(i != 3) {
-					if(arr[i].equalsIgnoreCase(s) && match) {
-						match = true;
-					}
-					else {
-						//System.out.println("[Matching] '" + arr[i] + "' does not match '" + s + "'");
-						match = false;
-					}
-				}
-				i++;
-			}
+			if(arr[1].equalsIgnoreCase(search[1]) && match) match = true;
+			else match = false;
 			
-			if(match == true) {
-				return v;
-			}
+			if(arr[4].equalsIgnoreCase(search[4]) && match) match = true;
+			else match = false;
 			
-			v++;
+			if(match) return i;
+				
+			i++;
 		}
 		
 		return -1;
@@ -152,7 +147,7 @@ public class History {
 				msgString += ChatColor.GREEN + (totalBought.toString()) + "x";
 				msgString += ChatColor.BLUE + arr[2].replace(" ", "") + " ";
 				msgString += ChatColor.WHITE + Time.GetAgo(Integer.parseInt(arr[3])) + " ago ";
-				msgString += ChatColor.GRAY + "(+ $" + Money.toString() + ")";
+				msgString += ChatColor.GRAY + "(+$" + Money.toString() + ")";
 				
 				sender.sendMessage(msgString);
 			}
@@ -168,7 +163,7 @@ public class History {
 				msgString += ChatColor.GREEN + (totalBought.toString()) + "x";
 				msgString += ChatColor.BLUE + arr[2].replace(" ", "") + " ";
 				msgString += ChatColor.WHITE + Time.GetAgo(Integer.parseInt(arr[3])) + " ago ";
-				msgString += ChatColor.GRAY + "(- $" + Money.toString() + ")";
+				msgString += ChatColor.GRAY + "(-$" + Money.toString() + ")";
 				
 				sender.sendMessage(msgString);
 			}
