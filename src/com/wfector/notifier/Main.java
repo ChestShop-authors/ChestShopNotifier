@@ -36,8 +36,6 @@ public class Main extends JavaPlugin implements Listener {
 	Connection c = null;
 
 	private FileConfiguration config;
-	private Runner runner;
-	private Login login;
 	private ArrayList<String> batch = new ArrayList<String>();
 	
 	private boolean verboseEnabled;
@@ -123,11 +121,27 @@ public class Main extends JavaPlugin implements Listener {
 		}
 		
 		if(this.isEnabled() && pluginEnabled) {
-		    this.runner = new Runner(this);
-		    this.runner.runTaskTimer(this, 2000L, 2000L);
+		    Bukkit.getScheduler().runTaskTimerAsynchronously(this, new Runnable() {
+
+				@Override
+				public void run() {
+					try {
+						runBatch();
+					} catch (SQLException e) {
+						e.printStackTrace();
+					}
+				} }, 2000L, 2000L);
 		    
-		    this.login = new Login(this);
-		    this.login.runTaskTimerAsynchronously(this, 60L, 60L);
+		    Bukkit.getScheduler().runTaskTimer(this, new Runnable() {
+
+				@Override
+				public void run() {
+					try {
+						runNotifier();
+					} catch (SQLException e) {
+						e.printStackTrace();
+					}
+				} }, 60L, 60L);
 		    
 		    getServer().getPluginManager().registerEvents(this, this);
 		}
