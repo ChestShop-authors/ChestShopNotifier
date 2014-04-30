@@ -12,7 +12,6 @@ import org.bukkit.command.CommandSender;
 
 import code.husky.mysql.MySQL;
 
-import com.wfector.notifier.Main;
 import com.wfector.util.ItemConverter;
 import com.wfector.util.Time;
 

@@ -1,7 +1,6 @@
 package com.wfector.command;
 
 import java.sql.Connection;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
@@ -14,7 +13,7 @@ public class Clear {
 		
 		try {
 			Statement statement = c.createStatement();
-			int res = statement.executeUpdate("UPDATE csn SET `Unread`='1' WHERE `ShopOwner`='" + userName + "'");
+			statement.executeUpdate("UPDATE csn SET `Unread`='1' WHERE `ShopOwner`='" + userName + "'");
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}

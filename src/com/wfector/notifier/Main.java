@@ -3,7 +3,6 @@ package com.wfector.notifier;
 import java.io.File;
 import java.io.InputStream;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -18,7 +17,6 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.ItemStack;
@@ -26,10 +24,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import com.Acrobot.ChestShop.Events.TransactionEvent;
 import com.Acrobot.ChestShop.Events.TransactionEvent.TransactionType;
-import com.wfector.command.Clear;
 import com.wfector.command.CommandRunner;
-import com.wfector.command.Help;
-import com.wfector.command.History;
 import com.wfector.util.Time;
 
 import code.husky.mysql.MySQL;
@@ -44,7 +39,6 @@ public class Main extends JavaPlugin implements Listener {
 	private Runner runner;
 	private Login login;
 	private ArrayList<String> batch = new ArrayList<String>();
-	private ArrayList<String> users = new ArrayList<String>();
 	
 	private boolean verboseEnabled;
 	private boolean joinNotificationEnabled;
@@ -117,7 +111,7 @@ public class Main extends JavaPlugin implements Listener {
 		try {
 			Statement statement = c.createStatement();
 			
-			int res = statement.executeUpdate("CREATE TABLE IF NOT EXISTS csn (Id int(11) AUTO_INCREMENT, ShopOwner VARCHAR(1000), Customer VARCHAR(1000), ItemId VARCHAR(1000), Mode INT(11), Amount INT(11), Quantity INT(11), Time INT(11), PRIMARY KEY (Id))");
+			statement.executeUpdate("CREATE TABLE IF NOT EXISTS csn (Id int(11) AUTO_INCREMENT, ShopOwner VARCHAR(1000), Customer VARCHAR(1000), ItemId VARCHAR(1000), Mode INT(11), Amount INT(11), Quantity INT(11), Time INT(11), PRIMARY KEY (Id))");
 			
 			c.close();
 		} catch (SQLException e) {
@@ -290,6 +284,7 @@ public class Main extends JavaPlugin implements Listener {
 		return true;
 	}
 	
+	@SuppressWarnings("deprecation")
 	public void runNotifier() throws SQLException {
 		
 		if(notifyusers_sales.isEmpty()) return;
@@ -342,7 +337,7 @@ public class Main extends JavaPlugin implements Listener {
 			}
 			
 			Statement statement = batchConnection.createStatement();
-			int res = statement.executeUpdate(qstr);
+			statement.executeUpdate(qstr);
 			System.out.println("[CSN] Update: " + qstr);
 			
 			batch.clear();

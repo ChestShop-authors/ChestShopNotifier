@@ -17,6 +17,7 @@ public class CommandRunner {
 		this.plugin = m;
 	}
 
+	@SuppressWarnings("deprecation")
 	public void Process(CommandSender sender, Command cmd, String label, String[] args) {
 		if(args.length == 0) {
 			sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&cCommand usage: /csn help"));
