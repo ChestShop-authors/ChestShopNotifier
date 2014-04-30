@@ -62,7 +62,7 @@ public class History {
 			
 			for(String s : search) {
 				if(i != 3) {
-					if(arr[i].equalsIgnoreCase(s)) {
+					if(arr[i].equalsIgnoreCase(s) && match) {
 						match = true;
 					}
 					else {
