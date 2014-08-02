@@ -1,9 +1,11 @@
 package com.wfector.command;
 
 import java.sql.SQLException;
+import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -24,7 +26,7 @@ public class CommandRunner {
 			return;
 		}
 		else {
-			if(args[0].equalsIgnoreCase("reload") && (sender.hasPermission("csn.admin") || sender.isOp())) {
+			if(args[0].equalsIgnoreCase("reload") && (sender.hasPermission("csn.admin"))) {
 				sender.sendMessage(ChatColor.LIGHT_PURPLE + "ChestShop Notifier // " + ChatColor.GRAY + "Reloading, please wait...");
 				
 				boolean didUpdate = this.plugin.updateConfiguration(true);
@@ -45,7 +47,7 @@ public class CommandRunner {
 				return;
 			}
 			if(args[0].equalsIgnoreCase("history") && sender.hasPermission("csn.user")) {
-				Player target;
+				OfflinePlayer target;
 				
 				if(this.plugin.pluginEnabled == false) {
 					sender.sendMessage(ChatColor.RED + "Invalid database connection. Please edit config and /csn reload.");
@@ -58,27 +60,31 @@ public class CommandRunner {
 						return;
 					}
 					
-					if(sender.hasPermission("csn.history.others") || sender.isOp() || sender.hasPermission("csn.admin")) {
-						target = Bukkit.getPlayer(args[1]);
+					if(sender.hasPermission("csn.history.others") || sender.hasPermission("csn.admin")) {
+						target = Bukkit.getOfflinePlayer(args[1]);
 					}
 					else {
-						sender.sendMessage(ChatColor.RED + "Too many arguments! /csn history");
+						sender.sendMessage(ChatColor.RED + "You don't have the permission to see other user's history! You can only use /csn history!");
+						return;
+					}
+					
+					if(target == null) {
+						sender.sendMessage(ChatColor.RED + "The user '" + args[1] + "' was not found.");
 						return;
 					}
 				}
 				else {
+					if(!(sender instanceof Player)) {
+						sender.sendMessage(ChatColor.RED + "The console has no sales!");
+						return;
+					}
 					target = (Player) sender;
 				}
-				
-				if(target == null) {
-					sender.sendMessage(ChatColor.RED + "The user '" + args[1] + "' was not found.");
-					return;
-				}
-				
-				String userName = target.getName();
+								
+				UUID userName = target.getUniqueId();
 				
 				History csh = new History();
-				csh.setUserName(userName);
+				csh.setUserId(userName);
 				
 				try {
 					csh.gatherResults(this.plugin.MySQL);
@@ -111,7 +117,9 @@ public class CommandRunner {
 					return;
 				}
 				
-				Clear.ClearHistory(this.plugin.MySQL, sender.getName());
+				UUID senderId = (sender instanceof Player) ? ((Player) sender).getUniqueId() : UUID.fromString("00000000-0000-0000-0000-000000000000");
+				
+				Clear.ClearHistory(this.plugin.MySQL, senderId);
 				sender.sendMessage(ChatColor.RED + "History cleared! New sales will continue to be recorded.");
 				
 				return;

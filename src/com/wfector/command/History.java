@@ -6,7 +6,9 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.UUID;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 
@@ -17,10 +19,10 @@ import com.wfector.util.Time;
 
 public class History {
 
-	private String userName = "";
+	private UUID userId;
 	private Integer maxRows = 25;
 
-	private ArrayList<String> historyUsers = new ArrayList<String>();
+	private ArrayList<UUID> historyUsers = new ArrayList<UUID>();
 	private ArrayList<String> historyItems = new ArrayList<String>();
 	private ArrayList<Integer> historyAmounts = new ArrayList<Integer>();
 	private ArrayList<Integer> historyTimes = new ArrayList<Integer>();
@@ -29,8 +31,8 @@ public class History {
 	
 	private int index = 0;
 	
-	public void setUserName(String un) {
-		this.userName = un;
+	public void setUserId(UUID uid) {
+		this.userId = uid;
 	}
 	public void setMaxRows(Integer mr) {
 		this.maxRows = mr;
@@ -40,12 +42,12 @@ public class History {
 		Connection c = m.openConnection();
 		Statement statement = c.createStatement();
 		
-		ResultSet res = statement.executeQuery("SELECT * FROM `csn` WHERE `ShopOwner`='" + this.userName + "' AND `Unread`='0' ORDER BY `Id` DESC LIMIT 1000");
+		ResultSet res = statement.executeQuery("SELECT * FROM `csnUUID` WHERE `ShopOwnerId`='" + this.userId.toString() + "' AND `Unread`='0' ORDER BY `Id` DESC LIMIT 1000");
 		
 		while(res.next()) {
 			index++;
 			
-			historyUsers.add(res.getString("Customer"));
+			historyUsers.add(UUID.fromString(res.getString("CustomerId")));
 			historyItems.add(res.getString("ItemId"));
 			historyAmounts.add(res.getInt("Amount"));
 			historyTimes.add(res.getInt("Time"));
@@ -94,7 +96,7 @@ public class History {
 		ArrayList<String[]> data = new ArrayList<String[]>();
 		ArrayList<Integer> times = new ArrayList<Integer>();
 		
-		for(String userName : historyUsers) {
+		for(UUID userId : historyUsers) {
 			Integer amount = historyAmounts.get(index);
 			String itemId = historyItems.get(index);
 			Integer time = historyTimes.get(index);
@@ -104,7 +106,7 @@ public class History {
 			itemId = ItemConverter.GetItemName(itemId);
 			
 			String[] arr = {
-				userName,
+				userId.toString(),
 				amount.toString(),
 				itemId,
 				time.toString(),
@@ -142,7 +144,7 @@ public class History {
 				Integer Money = Integer.parseInt(arr[1]) * Multiplier;
 				
 				String msgString = "+ ";
-				msgString += ChatColor.BLUE + arr[0] + " ";
+				msgString += ChatColor.BLUE + Bukkit.getOfflinePlayer(UUID.fromString(arr[0])).getName() + " ";
 				msgString += ChatColor.GRAY + "bought ";
 				msgString += ChatColor.GREEN + (totalBought.toString()) + "x";
 				msgString += ChatColor.BLUE + arr[2].replace(" ", "") + " ";
@@ -158,7 +160,7 @@ public class History {
 				Integer Money = Integer.parseInt(arr[1]) * Multiplier;
 				
 				String msgString = "- ";
-				msgString += ChatColor.BLUE + arr[0] + " ";
+				msgString += ChatColor.BLUE + Bukkit.getOfflinePlayer(UUID.fromString(arr[0])).getName() + " ";
 				msgString += ChatColor.GRAY + "sold you ";
 				msgString += ChatColor.GREEN + (totalBought.toString()) + "x";
 				msgString += ChatColor.BLUE + arr[2].replace(" ", "") + " ";

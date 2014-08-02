@@ -8,6 +8,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -110,7 +111,7 @@ public class Main extends JavaPlugin implements Listener {
 		try {
 			Statement statement = c.createStatement();
 			
-			statement.executeUpdate("CREATE TABLE IF NOT EXISTS csn (Id int(11) AUTO_INCREMENT, ShopOwner VARCHAR(1000), Customer VARCHAR(1000), ItemId VARCHAR(1000), Mode INT(11), Amount INT(11), Quantity INT(11), Time INT(11), PRIMARY KEY (Id))");
+			statement.executeUpdate("CREATE TABLE IF NOT EXISTS csnUUID (Id int(11) AUTO_INCREMENT, ShopOwnerId VARCHAR(36), CustomerId VARCHAR(36), ItemId VARCHAR(1000), Mode INT(11), Amount INT(11), Quantity INT(11), Time INT(11), PRIMARY KEY (Id))");
 			
 			c.close();
 		} catch (SQLException e) {
@@ -176,7 +177,7 @@ public class Main extends JavaPlugin implements Listener {
 	
 	Main plugin = this;
 	Integer theAmount = 0;
-	ArrayList<String> notifyusers_names = new ArrayList<String>();
+	ArrayList<UUID> notifyusers_ids = new ArrayList<UUID>();
 	ArrayList<Integer> notifyusers_sales = new ArrayList<Integer>();
 	ArrayList<Integer> notifyusers_times = new ArrayList<Integer>();
 	
@@ -190,7 +191,7 @@ public class Main extends JavaPlugin implements Listener {
 		debug("User joined. Checking for updates...");
 		
 		final Player p = e.getPlayer();
-		final String pName = p.getName();
+		final UUID pId = p.getUniqueId();
 		this.theAmount = 0;
 
 		if(!pluginEnabled) {
@@ -214,7 +215,7 @@ public class Main extends JavaPlugin implements Listener {
 				}
 				ResultSet res = null;
 				try {
-					res = statement.executeQuery("SELECT `ShopOwner` FROM csn WHERE `ShopOwner`='" + pName + "' AND `Unread`='0'");
+					res = statement.executeQuery("SELECT `ShopOwnerId` FROM csnUUID WHERE `ShopOwnerId`='" + pId.toString() + "' AND `Unread`='0'");
 					
 					res.next();
 				} catch (SQLException e) {
@@ -250,7 +251,7 @@ public class Main extends JavaPlugin implements Listener {
 					debug("Added message to queue (delay s: " + joinNotificationDelay + ")");
 					Integer SendTime = (int) (dt.getTime() / 1000) + joinNotificationDelay;
 					
-					plugin.notifyusers_names.add(pName);
+					plugin.notifyusers_ids.add(pId);
 					plugin.notifyusers_sales.add(theAmount);
 					plugin.notifyusers_times.add(SendTime);
 					plugin.newNotifications = true;
@@ -264,7 +265,7 @@ public class Main extends JavaPlugin implements Listener {
 	
 	@EventHandler
 	public boolean onChestShopTransaction(TransactionEvent e) {
-		String ownerName = e.getOwner().getName();
+		UUID ownerId = e.getOwner().getUniqueId();
 		TransactionType f = e.getTransactionType();
 		
 		Integer mode = 0;
@@ -273,7 +274,7 @@ public class Main extends JavaPlugin implements Listener {
 		else { mode = 2; }
 		
 		Integer price = (int) e.getPrice();
-		String clientName = e.getClient().getName();
+		UUID clientId = e.getClient().getUniqueId();
 
 		StringBuilder items = new StringBuilder(50);
 		Integer itemQuantitys = 0;
@@ -286,7 +287,7 @@ public class Main extends JavaPlugin implements Listener {
         String itemId = items.toString();
         Integer itemQuant = itemQuantitys;
         
-        batch.add("('" + ownerName + "', '" + clientName + "', '" + itemId + "', '" + mode.toString() + "', '" + price.toString() + "', '" + Time.GetEpochTime() + "', '" + itemQuant.toString() + "', '0')");
+        batch.add("('" + ownerId.toString() + "', '" + clientId.toString() + "', '" + itemId + "', '" + mode.toString() + "', '" + price.toString() + "', '" + Time.GetEpochTime() + "', '" + itemQuant.toString() + "', '0')");
         
         System.out.println("Item added to batch.");
         
@@ -306,7 +307,6 @@ public class Main extends JavaPlugin implements Listener {
 		return true;
 	}
 	
-	@SuppressWarnings("deprecation")
 	public void runNotifier() throws SQLException {
 		
 		if(!newNotifications) return;
@@ -314,12 +314,12 @@ public class Main extends JavaPlugin implements Listener {
 		
 		int i = 0;
 		
-		for(String username : notifyusers_names) {
+		for(UUID userid : notifyusers_ids) {
 			Integer sales = notifyusers_sales.get(i);
 				
-			Player p = Bukkit.getPlayer(username);
+			Player p = Bukkit.getPlayer(userid);
 			if(p != null) {
-				debug("[NotifierQueue] Ran for user '" + username + "'");
+				debug("[NotifierQueue] Ran for user '" + p.getName() + "'");
 				p.sendMessage(ChatColor.translateAlternateColorCodes('&', 
 						"&c ** You made &f" + sales.toString() + " sales&c since you last checked.")
 					);
@@ -328,12 +328,12 @@ public class Main extends JavaPlugin implements Listener {
 					);
 			}
 			else {
-				debug("Warning: The player '" + username + "' could not be found, yet was in queue.");
+				debug("Warning: The player with the uuid '" + userid + "' could not be found, yet was in queue.");
 			}
 		}
 
 		debug("[NotifierQueue] Finished.");
-		notifyusers_names.clear();
+		notifyusers_ids.clear();
 		notifyusers_sales.clear();
 		
 		newNotifications = false;
@@ -351,7 +351,7 @@ public class Main extends JavaPlugin implements Listener {
 			
 			Connection batchConnection = this.database;
 			
-			String qstr = "INSERT INTO csn (`ShopOwner`, `Customer`, `ItemId`, `Mode`, `Amount`, `Time`, `Quantity`, `Unread`) VALUES ";
+			String qstr = "INSERT INTO csnUUID (`ShopOwnerId`, `CustomerId`, `ItemId`, `Mode`, `Amount`, `Time`, `Quantity`, `Unread`) VALUES ";
 			
 			int i = 0;
 			
