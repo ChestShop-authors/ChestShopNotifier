@@ -9,6 +9,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.UUID;
+import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -111,7 +112,7 @@ public class Main extends JavaPlugin implements Listener {
 		try {
 			Statement statement = c.createStatement();
 			
-			statement.executeUpdate("CREATE TABLE IF NOT EXISTS csnUUID (Id int(11) AUTO_INCREMENT, ShopOwnerId VARCHAR(36), CustomerId VARCHAR(36), ItemId VARCHAR(1000), Mode INT(11), Amount INT(11), Quantity INT(11), Time INT(11), PRIMARY KEY (Id))");
+			statement.executeUpdate("CREATE TABLE IF NOT EXISTS csnUUID (Id int(11) AUTO_INCREMENT, ShopOwnerId VARCHAR(36), CustomerId VARCHAR(36), ItemId VARCHAR(1000), Mode INT(11), Amount INT(11), Quantity INT(11), Time INT(11), Unread INT(11), PRIMARY KEY (Id))");
 			
 			c.close();
 		} catch (SQLException e) {
@@ -215,7 +216,7 @@ public class Main extends JavaPlugin implements Listener {
 				}
 				ResultSet res = null;
 				try {
-					res = statement.executeQuery("SELECT `ShopOwnerId` FROM csnUUID WHERE `ShopOwnerId`='" + pId.toString() + "' AND `Unread`='0'");
+					res = statement.executeQuery("SELECT `ShopOwnerId` FROM csnUUID WHERE `ShopOwnerId`='" + pId.toString() + "' AND `Unread`='0'"); /*  TODO: Find out what unread does */
 					
 					res.next();
 				} catch (SQLException e) {
@@ -289,7 +290,7 @@ public class Main extends JavaPlugin implements Listener {
         
         batch.add("('" + ownerId.toString() + "', '" + clientId.toString() + "', '" + itemId + "', '" + mode.toString() + "', '" + price.toString() + "', '" + Time.GetEpochTime() + "', '" + itemQuant.toString() + "', '0')");
         
-        System.out.println("Item added to batch.");
+        debug("Item added to batch.");
         
 		return true;
 	}
@@ -319,7 +320,7 @@ public class Main extends JavaPlugin implements Listener {
 				
 			Player p = Bukkit.getPlayer(userid);
 			if(p != null) {
-				debug("[NotifierQueue] Ran for user '" + p.getName() + "'");
+				debug("Ran for user '" + p.getName() + "'");
 				p.sendMessage(ChatColor.translateAlternateColorCodes('&', 
 						"&c ** You made &f" + sales.toString() + " sales&c since you last checked.")
 					);
@@ -332,7 +333,7 @@ public class Main extends JavaPlugin implements Listener {
 			}
 		}
 
-		debug("[NotifierQueue] Finished.");
+		debug("Finished.");
 		notifyusers_ids.clear();
 		notifyusers_sales.clear();
 		
@@ -367,7 +368,7 @@ public class Main extends JavaPlugin implements Listener {
 			
 			Statement statement = batchConnection.createStatement();
 			statement.executeUpdate(qstr);
-			System.out.println("[CSN] Update: " + qstr);
+			debug("Update: " + qstr);
 			
 			batch.clear();
 			
@@ -382,7 +383,7 @@ public class Main extends JavaPlugin implements Listener {
 	
 	public void debug(String d) {
 		if(verboseEnabled) {
-			System.out.println(d);
+			this.getLogger().log(Level.INFO, d);
 		}
 	}
 	
