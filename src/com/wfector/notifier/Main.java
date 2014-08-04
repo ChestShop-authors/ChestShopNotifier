@@ -56,6 +56,12 @@ public class Main extends JavaPlugin implements Listener {
 	private FileConfiguration customConfig = null;
 	private File customConfigFile = null;
 	
+	Main plugin = this;
+	Integer theAmount = 0;
+	ArrayList<UUID> notifyusers_ids = new ArrayList<UUID>();
+	ArrayList<Integer> notifyusers_sales = new ArrayList<Integer>();
+	ArrayList<Integer> notifyusers_times = new ArrayList<Integer>();
+	
 	public boolean updateConfiguration(boolean isReload) {
 		if(isReload) reloadCustomConfig();
 		
@@ -150,13 +156,13 @@ public class Main extends JavaPlugin implements Listener {
 	}
 	public void onDisable() {
 		if(batch.size() > 0) {
-			System.out.println("Database queue is not empty. Uploading now...");
+			this.getLogger().log(Level.INFO, "Database queue is not empty. Uploading now...");
 			try {
 				runBatch();
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}
-			System.out.println("Done!");
+			this.getLogger().log(Level.INFO, "Done uploading database queue!");
 		}
 		
 	}
@@ -175,12 +181,7 @@ public class Main extends JavaPlugin implements Listener {
 		
 		return false; 
 	}
-	
-	Main plugin = this;
-	Integer theAmount = 0;
-	ArrayList<UUID> notifyusers_ids = new ArrayList<UUID>();
-	ArrayList<Integer> notifyusers_sales = new ArrayList<Integer>();
-	ArrayList<Integer> notifyusers_times = new ArrayList<Integer>();
+
 	
 	@EventHandler
 	public void onPlayerJoinEvent(PlayerJoinEvent e) {
@@ -216,7 +217,7 @@ public class Main extends JavaPlugin implements Listener {
 				}
 				ResultSet res = null;
 				try {
-					res = statement.executeQuery("SELECT `ShopOwnerId` FROM csnUUID WHERE `ShopOwnerId`='" + pId.toString() + "' AND `Unread`='0'"); /*  TODO: Find out what unread does */
+					res = statement.executeQuery("SELECT `ShopOwnerId` FROM csnUUID WHERE `ShopOwnerId`='" + pId.toString() + "' AND `Unread`='0'"); 
 					
 					res.next();
 				} catch (SQLException e) {
