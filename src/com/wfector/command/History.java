@@ -14,8 +14,11 @@ import org.bukkit.command.CommandSender;
 
 import code.husky.mysql.MySQL;
 
+import com.Acrobot.ChestShop.ChestShop;
 import com.wfector.util.ItemConverter;
 import com.wfector.util.Time;
+
+import com.Acrobot.ChestShop.Economy.Economy;
 
 public class History {
 
@@ -141,7 +144,7 @@ public class History {
 				Integer totalBought = Integer.parseInt(arr[5]);
 				totalBought = totalBought * (Multiplier);
 				
-				Integer Money = Integer.parseInt(arr[1]) * Multiplier;
+				Integer money = Integer.parseInt(arr[1]) * Multiplier;
 				
 				String msgString = "+ ";
 				msgString += ChatColor.BLUE + Bukkit.getOfflinePlayer(UUID.fromString(arr[0])).getName() + " ";
@@ -149,7 +152,7 @@ public class History {
 				msgString += ChatColor.GREEN + (totalBought.toString()) + "x";
 				msgString += ChatColor.BLUE + arr[2].replace(" ", "") + " ";
 				msgString += ChatColor.WHITE + Time.GetAgo(Integer.parseInt(arr[3])) + " ago ";
-				msgString += ChatColor.GRAY + "(+$" + Money.toString() + ")";
+				msgString += ChatColor.GRAY + "(+" + Economy.formatBalance(money) + ")";
 				
 				sender.sendMessage(msgString);
 			}
@@ -157,7 +160,7 @@ public class History {
 				Integer totalBought = Integer.parseInt(arr[5]);
 				totalBought = totalBought * (Multiplier);
 				
-				Integer Money = Integer.parseInt(arr[1]) * Multiplier;
+				Integer money = Integer.parseInt(arr[1]) * Multiplier;
 				
 				String msgString = "- ";
 				msgString += ChatColor.BLUE + Bukkit.getOfflinePlayer(UUID.fromString(arr[0])).getName() + " ";
@@ -165,7 +168,7 @@ public class History {
 				msgString += ChatColor.GREEN + (totalBought.toString()) + "x";
 				msgString += ChatColor.BLUE + arr[2].replace(" ", "") + " ";
 				msgString += ChatColor.WHITE + Time.GetAgo(Integer.parseInt(arr[3])) + " ago ";
-				msgString += ChatColor.GRAY + "(-$" + Money.toString() + ")";
+				msgString += ChatColor.GRAY + "(-" + Economy.formatBalance(money) + ")";
 				
 				sender.sendMessage(msgString);
 			}
