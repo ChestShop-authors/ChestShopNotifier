@@ -20,7 +20,7 @@ database:
   password: '123456'
   
 messages:
-  sales: "&c ** You made &f {sales} sales&c since you last checked."
+  sales: "&c ** You made &f{sales} sales&c since you last checked."
   history-cmd: "&c ** To see them, type &f/csn history&c."
   history-caption: "&dChestShop Notifier // &7Latest Commissions"
   history-empty: "&cNothing to show."
