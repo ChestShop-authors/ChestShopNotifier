@@ -53,9 +53,6 @@ public class Main extends JavaPlugin implements Listener {
 	public boolean pluginEnabled = false;
 	public boolean newNotifications = false;
 	
-	private FileConfiguration customConfig = null;
-	private File customConfigFile = null;
-	
 	Main plugin = this;
 	Integer theAmount = 0;
 	ArrayList<UUID> notifyusers_ids = new ArrayList<UUID>();
@@ -63,9 +60,9 @@ public class Main extends JavaPlugin implements Listener {
 	ArrayList<Integer> notifyusers_times = new ArrayList<Integer>();
 	
 	public boolean updateConfiguration(boolean isReload) {
-		if(isReload) reloadCustomConfig();
+		if(isReload) this.reloadConfig();
 		
-		this.config = getCustomConfig();
+		this.config = this.getConfig();
 		
 		verboseEnabled = this.config.getBoolean("debugging.verbose");
 		joinNotificationEnabled = this.config.getBoolean("notifications.notify-on-user-join");
@@ -388,30 +385,4 @@ public class Main extends JavaPlugin implements Listener {
 		}
 	}
 	
-	public void reloadCustomConfig() {
-	    if (customConfigFile == null) {
-	    customConfigFile = new File(getDataFolder(), "config.yml");
-	    }
-	    customConfig = YamlConfiguration.loadConfiguration(customConfigFile);
-	 
-	    InputStream defConfigStream = this.getResource("config.yml");
-	    if (defConfigStream != null) {
-	        YamlConfiguration defConfig = YamlConfiguration.loadConfiguration(defConfigStream);
-	        customConfig.setDefaults(defConfig);
-	    }
-	}
-	public FileConfiguration getCustomConfig() {
-	    if (customConfig == null) {
-	        reloadCustomConfig();
-	    }
-	    return customConfig;
-	}
-	public void saveDefaultConfig() {
-	    if (customConfigFile == null) {
-	        customConfigFile = new File(getDataFolder(), "config.yml");
-	    }
-	    if (!customConfigFile.exists()) {            
-	         plugin.saveResource("config.yml", false);
-	     }
-	}
 }
