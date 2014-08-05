@@ -50,6 +50,8 @@ public class Main extends JavaPlugin implements Listener {
 	private String dbUsername;
 	private String dbPassword;
 	
+	private Connection database;
+	
 	public boolean pluginEnabled = false;
 	public boolean newNotifications = false;
 	public boolean logAdminShop = true;
@@ -101,7 +103,8 @@ public class Main extends JavaPlugin implements Listener {
 					} catch (SQLException e) {
 						e.printStackTrace();
 					}
-				} }, 2000L, 2000L);
+				} 
+			}, 2000L, 2000L);
 		    
 		    Bukkit.getScheduler().runTaskTimer(this, new Runnable() {
 
@@ -112,7 +115,8 @@ public class Main extends JavaPlugin implements Listener {
 					} catch (SQLException e) {
 						e.printStackTrace();
 					}
-				} }, 60L, 60L);
+				} 
+			}, 60L, 60L);
 		    
 		    getServer().getPluginManager().registerEvents(this, this);
 		}
@@ -160,26 +164,21 @@ public class Main extends JavaPlugin implements Listener {
 				
 				pluginEnabled = false;
 				return false;
-			}
-			
+			}			
 			pluginEnabled = true;
-		}
-		
+		}		
 		return true;
 	}
 	
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-		if (cmd.getName().equalsIgnoreCase("csn")) {
-			
+		if (cmd.getName().equalsIgnoreCase("csn")) {			
 			CommandRunner c = new CommandRunner();
 			c.SetPlugin(this);
 			c.Process(sender, cmd, label, args);
 			
-			return true;
-			
-		}
-		
+			return true;			
+		}		
 		return false; 
 	}
 
@@ -227,20 +226,18 @@ public class Main extends JavaPlugin implements Listener {
 				
 				Integer amount = 0;
 				try {
-					if(res.getMetaData().getColumnCount() > 0) {
-					while(res.next()) {
-						amount++;
-					}
-					}
+					if(res.getMetaData().getColumnCount() > 0) 
+						while(res.next()) 
+							amount++;
+					
 					debug("Found rows: " + amount.toString());
 				} catch (SQLException e) {
 					e.printStackTrace();
 				}
 				
 				if(p.isOnline()) {
-					if(amount > 0) {
+					if(amount > 0) 
 						plugin.theAmount = amount;
-					}
 				}
 				
 				try {
@@ -274,10 +271,7 @@ public class Main extends JavaPlugin implements Listener {
 		
 		TransactionType f = e.getTransactionType();
 		
-		Integer mode = 0;
-		
-		if(f == TransactionType.BUY) { mode = 1; }
-		else { mode = 2; }
+		Integer mode = (f == TransactionType.BUY) ? 1 : 2;
 		
 		Integer price = (int) e.getPrice();
 		UUID clientId = e.getClient().getUniqueId();
@@ -299,15 +293,11 @@ public class Main extends JavaPlugin implements Listener {
         
 		return true;
 	}
-	
-	private Connection database;
-	
+		
 	public boolean connect() {
-	    try
-	    {
+	    try {
 	    	this.database = MySQL.openConnection();
-	    }
-	    catch (Exception e) {
+	    } catch (Exception e) {
 	    	return false;
 	    }
 		return true;
@@ -332,8 +322,7 @@ public class Main extends JavaPlugin implements Listener {
 				p.sendMessage(ChatColor.translateAlternateColorCodes('&', 
 						"&c ** To see them, type &f/csn history&c.")
 					);
-			}
-			else {
+			} else {
 				debug("Warning: The player with the uuid '" + userid + "' could not be found, yet was in queue.");
 			}
 		}
@@ -365,10 +354,8 @@ public class Main extends JavaPlugin implements Listener {
 				qstr += query;
 				if(batch.size() > (i+1)) {
 					qstr += ", ";
-				}
-				
-				i++;
-				
+				}				
+				i++;				
 			}
 			
 			Statement statement = batchConnection.createStatement();
@@ -378,18 +365,14 @@ public class Main extends JavaPlugin implements Listener {
 			batch.clear();
 			
 			batchConnection.close();
-		}
-		else {
-			
-		}
+		} 
 		
 		debug("Batch completed.");
 	}
 	
 	public void debug(String d) {
-		if(verboseEnabled) {
+		if(verboseEnabled)
 			this.getLogger().log(Level.INFO, d);
-		}
 	}
 	
 }
