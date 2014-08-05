@@ -1,7 +1,5 @@
 package com.wfector.notifier;
 
-import java.io.File;
-import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -16,7 +14,6 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -26,10 +23,13 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import com.Acrobot.ChestShop.Events.TransactionEvent;
 import com.Acrobot.ChestShop.Events.TransactionEvent.TransactionType;
+import com.Acrobot.ChestShop.UUIDs.NameManager;
+
 import com.wfector.command.CommandRunner;
 import com.wfector.util.Time;
 
 import code.husky.mysql.MySQL;
+
 import static com.Acrobot.Breeze.Utils.MaterialUtil.getSignName;
 
 public class Main extends JavaPlugin implements Listener {
@@ -52,6 +52,7 @@ public class Main extends JavaPlugin implements Listener {
 	
 	public boolean pluginEnabled = false;
 	public boolean newNotifications = false;
+	public boolean logAdminShop = true;
 	
 	Main plugin = this;
 	Integer theAmount = 0;
@@ -59,43 +60,8 @@ public class Main extends JavaPlugin implements Listener {
 	ArrayList<Integer> notifyusers_sales = new ArrayList<Integer>();
 	ArrayList<Integer> notifyusers_times = new ArrayList<Integer>();
 	
-	public boolean updateConfiguration(boolean isReload) {
-		if(isReload) this.reloadConfig();
-		
-		this.config = this.getConfig();
-		
-		verboseEnabled = this.config.getBoolean("debugging.verbose");
-		joinNotificationEnabled = this.config.getBoolean("notifications.notify-on-user-join");
-		joinNotificationDelay = this.config.getInt("notifications.delay-seconds");
-		
-		dbHost = this.config.getString("database.host");
-		dbPort = this.config.getInt("database.port");
-		dbName = this.config.getString("database.dbname");
-		dbUsername = this.config.getString("database.username");
-		dbPassword = this.config.getString("database.password");
-				
-		if(isReload) { 
-			MySQL = new MySQL(this, dbHost, dbPort.toString(), dbName, dbUsername, dbPassword);
-			
-			System.out.println("Connecting to the database...");
-			
-			c = MySQL.openConnection();
-			
-			if(c == null) {
-				System.out.println("Failed to connect to the database! Disabling connections!");
-				
-				pluginEnabled = false;
-				return false;
-			}
-			
-			pluginEnabled = true;
-		}
-		
-		return true;
-	}
-	
 	public void onEnable() {
-		saveDefaultConfig();
+		this.saveDefaultConfig();
 		updateConfiguration(true);
 		
 		System.out.println("Connecting to the database...");
@@ -151,6 +117,7 @@ public class Main extends JavaPlugin implements Listener {
 		    getServer().getPluginManager().registerEvents(this, this);
 		}
 	}
+	
 	public void onDisable() {
 		if(batch.size() > 0) {
 			this.getLogger().log(Level.INFO, "Database queue is not empty. Uploading now...");
@@ -162,6 +129,43 @@ public class Main extends JavaPlugin implements Listener {
 			this.getLogger().log(Level.INFO, "Done uploading database queue!");
 		}
 		
+	}	
+
+	public boolean updateConfiguration(boolean isReload) {
+		if(isReload) this.reloadConfig();
+		
+		this.config = this.getConfig();
+		
+		verboseEnabled = this.config.getBoolean("debugging.verbose");
+		joinNotificationEnabled = this.config.getBoolean("notifications.notify-on-user-join");
+		joinNotificationDelay = this.config.getInt("notifications.delay-seconds");
+		
+		this.dbHost = this.config.getString("database.host");
+		this.dbPort = this.config.getInt("database.port");
+		this.dbName = this.config.getString("database.dbname");
+		this.dbUsername = this.config.getString("database.username");
+		this.dbPassword = this.config.getString("database.password");
+		
+		this.logAdminShop = this.config.getBoolean("logging.admin-shop");		
+				
+		if(isReload) { 
+			MySQL = new MySQL(this, dbHost, dbPort.toString(), dbName, dbUsername, dbPassword);
+			
+			System.out.println("Connecting to the database...");
+			
+			c = MySQL.openConnection();
+			
+			if(c == null) {
+				System.out.println("Failed to connect to the database! Disabling connections!");
+				
+				pluginEnabled = false;
+				return false;
+			}
+			
+			pluginEnabled = true;
+		}
+		
+		return true;
 	}
 	
 	@Override
@@ -265,6 +269,9 @@ public class Main extends JavaPlugin implements Listener {
 	@EventHandler
 	public boolean onChestShopTransaction(TransactionEvent e) {
 		UUID ownerId = e.getOwner().getUniqueId();
+		
+		if(!this.logAdminShop && NameManager.isAdminShop(ownerId)) return true;
+		
 		TransactionType f = e.getTransactionType();
 		
 		Integer mode = 0;
