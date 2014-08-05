@@ -120,7 +120,7 @@ public class CommandRunner {
 				UUID senderId = (sender instanceof Player) ? ((Player) sender).getUniqueId() : UUID.fromString("00000000-0000-0000-0000-000000000000");
 				
 				Clear.ClearHistory(this.plugin.MySQL, senderId);
-				sender.sendMessage(ChatColor.RED + "History cleared! New sales will continue to be recorded.");
+				if(plugin.getMessage("history-clear") != null) sender.sendMessage(plugin.getMessage("history-clear"));
 				
 				return;
 			}
