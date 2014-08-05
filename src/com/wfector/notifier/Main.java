@@ -66,19 +66,19 @@ public class Main extends JavaPlugin implements Listener {
 		this.saveDefaultConfig();
 		updateConfiguration(true);
 		
-		System.out.println("Connecting to the database...");
+		this.getLogger().log(Level.INFO, "Connecting to the database...");
 		
 		c = MySQL.openConnection();
 		
 		if(c == null) {
-			System.out.println("Failed to connect to the database! Disabling connections!");
+			this.getLogger().log(Level.WARNING, "Failed to connect to the database! Disabling connections!");
 			
 			return;
 		}
 		
 		pluginEnabled = true;
 		
-		System.out.println("Connected!");
+		this.getLogger().log(Level.INFO, "Connected!");
 		
 		try {
 			Statement statement = c.createStatement();
@@ -155,12 +155,12 @@ public class Main extends JavaPlugin implements Listener {
 		if(isReload) { 
 			MySQL = new MySQL(this, dbHost, dbPort.toString(), dbName, dbUsername, dbPassword);
 			
-			System.out.println("Connecting to the database...");
+			this.getLogger().log(Level.INFO, "Connecting to the database...");
 			
 			c = MySQL.openConnection();
 			
 			if(c == null) {
-				System.out.println("Failed to connect to the database! Disabling connections!");
+				this.getLogger().log(Level.WARNING, "Failed to connect to the database! Disabling connections!");
 				
 				pluginEnabled = false;
 				return false;
