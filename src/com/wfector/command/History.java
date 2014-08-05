@@ -151,11 +151,11 @@ public class History {
 			
 			Integer money = Integer.parseInt(arr[1]) * Multiplier;
 			
-			msgString.replace("{player}", Bukkit.getOfflinePlayer(UUID.fromString(arr[0])).getName());
-			msgString.replace("{count}", totalItems.toString());
-			msgString.replace("{item}", arr[2].replace(" ", ""));
-			msgString.replace("{timeago}", Time.GetAgo(Integer.parseInt(arr[3])));
-			msgString.replace("{money}", Economy.formatBalance(money));			
+			msgString = msgString.replace("{player}", Bukkit.getOfflinePlayer(UUID.fromString(arr[0])).getName());
+			msgString = msgString.replace("{count}", totalItems.toString());
+			msgString = msgString.replace("{item}", arr[2].replace(" ", ""));
+			msgString = msgString.replace("{timeago}", Time.GetAgo(Integer.parseInt(arr[3])));
+			msgString = msgString.replace("{money}", Economy.formatBalance(money));			
 
 			sender.sendMessage(msgString);
 			
