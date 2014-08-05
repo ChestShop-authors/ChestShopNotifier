@@ -18,3 +18,12 @@ database:
   dbname: 'database1'
   username: 'dbadmin'
   password: '123456'
+  
+messages:
+  sales: "&c ** You made &f {sales} sales&c since you last checked."
+  history-cmd: "&c ** To see them, type &f/csn history&c."
+  history-caption: "&dChestShop Notifier // &7Latest Commissions"
+  history-empty: "&cNothing to show."
+  history-bought: "&9{player} &7bought &a{count}x&9{item} &f{timeago} ago &7(+{money})"
+  history-sold: "&9{player} &7sould you &a{count}x&9{item} &f{timeago} ago &7(+{money})"
+  history-read: "&c- To mark these as read, type /csn clear"

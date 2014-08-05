@@ -24,12 +24,10 @@ import org.bukkit.plugin.java.JavaPlugin;
 import com.Acrobot.ChestShop.Events.TransactionEvent;
 import com.Acrobot.ChestShop.Events.TransactionEvent.TransactionType;
 import com.Acrobot.ChestShop.UUIDs.NameManager;
-
 import com.wfector.command.CommandRunner;
 import com.wfector.util.Time;
 
 import code.husky.mysql.MySQL;
-
 import static com.Acrobot.Breeze.Utils.MaterialUtil.getSignName;
 
 public class Main extends JavaPlugin implements Listener {
@@ -168,6 +166,15 @@ public class Main extends JavaPlugin implements Listener {
 			pluginEnabled = true;
 		}		
 		return true;
+	}
+	
+	/**
+	 * Gets a message from the config file.
+	 * @param string The name of the message to get
+	 * @return The message or null if it doesn't exist
+	 */
+	public String getMessage(String string) {
+		return (this.getConfig().contains("messages." + string)) ? ChatColor.translateAlternateColorCodes('&', this.getConfig().getString("messages." + string)) : null;
 	}
 	
 	@Override
@@ -316,12 +323,8 @@ public class Main extends JavaPlugin implements Listener {
 			Player p = Bukkit.getPlayer(userid);
 			if(p != null) {
 				debug("Ran for user '" + p.getName() + "'");
-				p.sendMessage(ChatColor.translateAlternateColorCodes('&', 
-						"&c ** You made &f" + sales.toString() + " sales&c since you last checked.")
-					);
-				p.sendMessage(ChatColor.translateAlternateColorCodes('&', 
-						"&c ** To see them, type &f/csn history&c.")
-					);
+				if(plugin.getMessage("sales") != null) p.sendMessage(this.getMessage("sales").replace("{sales}", sales.toString()));
+				if(plugin.getMessage("history-cmd") != null) p.sendMessage(this.getMessage("history-cmd"));
 			} else {
 				debug("Warning: The player with the uuid '" + userid + "' could not be found, yet was in queue.");
 			}
@@ -333,7 +336,8 @@ public class Main extends JavaPlugin implements Listener {
 		
 		newNotifications = false;
 	}
-	
+
+
 	public void runBatch() throws SQLException {
 		
 		debug("Running a batch...");

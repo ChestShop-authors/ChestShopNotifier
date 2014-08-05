@@ -83,7 +83,7 @@ public class CommandRunner {
 								
 				UUID userName = target.getUniqueId();
 				
-				History csh = new History();
+				History csh = new History(this.plugin);
 				csh.setUserId(userName);
 				
 				try {

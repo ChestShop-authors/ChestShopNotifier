@@ -14,10 +14,9 @@ import org.bukkit.command.CommandSender;
 
 import code.husky.mysql.MySQL;
 
-import com.Acrobot.ChestShop.ChestShop;
+import com.wfector.notifier.Main;
 import com.wfector.util.ItemConverter;
 import com.wfector.util.Time;
-
 import com.Acrobot.ChestShop.Economy.Economy;
 
 public class History {
@@ -33,6 +32,11 @@ public class History {
 	private ArrayList<Integer> historyQuantities = new ArrayList<Integer>();
 	
 	private int index = 0;
+	private Main plugin;
+	
+	public History(Main plugin) {
+		this.plugin = plugin;
+	}
 	
 	public void setUserId(UUID uid) {
 		this.userId = uid;
@@ -84,14 +88,14 @@ public class History {
 	}
 	
 	public void showResults(CommandSender sender) {
-		sender.sendMessage(ChatColor.LIGHT_PURPLE + "ChestShop Notifier // " + ChatColor.GRAY + "Latest Commissions");
+		if(plugin.getMessage("history-caption") != null) sender.sendMessage(plugin.getMessage("history-caption"));
 		sender.sendMessage("");
 		
 		index = 0;
 		int lines = 0;
 		
 		if(historyUsers.isEmpty()) {
-			sender.sendMessage(ChatColor.RED + "Nothing to show.");
+			if(plugin.getMessage("history-empty") != null) sender.sendMessage(plugin.getMessage("history-empty"));
 			
 			return;
 		}
@@ -140,44 +144,26 @@ public class History {
 		for(String[] arr : data) {
 			Integer Multiplier = times.get(i);
 
-			if(Integer.parseInt(arr[4]) == 1) {
-				Integer totalBought = Integer.parseInt(arr[5]);
-				totalBought = totalBought * (Multiplier);
-				
-				Integer money = Integer.parseInt(arr[1]) * Multiplier;
-				
-				String msgString = "+ ";
-				msgString += ChatColor.BLUE + Bukkit.getOfflinePlayer(UUID.fromString(arr[0])).getName() + " ";
-				msgString += ChatColor.GRAY + "bought ";
-				msgString += ChatColor.GREEN + (totalBought.toString()) + "x";
-				msgString += ChatColor.BLUE + arr[2].replace(" ", "") + " ";
-				msgString += ChatColor.WHITE + Time.GetAgo(Integer.parseInt(arr[3])) + " ago ";
-				msgString += ChatColor.GRAY + "(+" + Economy.formatBalance(money) + ")";
-				
-				sender.sendMessage(msgString);
-			}
-			if(Integer.parseInt(arr[4]) == 2) {
-				Integer totalBought = Integer.parseInt(arr[5]);
-				totalBought = totalBought * (Multiplier);
-				
-				Integer money = Integer.parseInt(arr[1]) * Multiplier;
-				
-				String msgString = "- ";
-				msgString += ChatColor.BLUE + Bukkit.getOfflinePlayer(UUID.fromString(arr[0])).getName() + " ";
-				msgString += ChatColor.GRAY + "sold you ";
-				msgString += ChatColor.GREEN + (totalBought.toString()) + "x";
-				msgString += ChatColor.BLUE + arr[2].replace(" ", "") + " ";
-				msgString += ChatColor.WHITE + Time.GetAgo(Integer.parseInt(arr[3])) + " ago ";
-				msgString += ChatColor.GRAY + "(-" + Economy.formatBalance(money) + ")";
-				
-				sender.sendMessage(msgString);
-			}
+			String msgString = (Integer.parseInt(arr[4]) == 1) ? plugin.getMessage("history-bought") : plugin.getMessage("history-sold");
+			
+			Integer totalItems = Integer.parseInt(arr[5]);
+			totalItems = totalItems * (Multiplier);
+			
+			Integer money = Integer.parseInt(arr[1]) * Multiplier;
+			
+			msgString.replace("{player}", Bukkit.getOfflinePlayer(UUID.fromString(arr[0])).getName());
+			msgString.replace("{count}", totalItems.toString());
+			msgString.replace("{item}", arr[2].replace(" ", ""));
+			msgString.replace("{timeago}", Time.GetAgo(Integer.parseInt(arr[3])));
+			msgString.replace("{money}", Economy.formatBalance(money));			
+
+			sender.sendMessage(msgString);
 			
 			i++;
 		}
 		
 		sender.sendMessage(" ");
-		sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&c- To mark these as read, type /csn clear"));
+		sender.sendMessage(plugin.getMessage("history-read"));
 		
 		
 	}
