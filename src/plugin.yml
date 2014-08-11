@@ -1,7 +1,7 @@
 main: com.wfector.notifier.Main
 name: ChestShopNotifier
-version: 1.1
-description: §eShows all transactions made in your ChestShops throughout history.
+version: 1.1.1
+description: Shows all transactions made in your ChestShops throughout history.
 author: BetaBlaze
 authors: [Phoenix616]
 depend: [ChestShop]

@@ -26,7 +26,7 @@ public class History {
 
 	private ArrayList<UUID> historyUsers = new ArrayList<UUID>();
 	private ArrayList<String> historyItems = new ArrayList<String>();
-	private ArrayList<Integer> historyAmounts = new ArrayList<Integer>();
+	private ArrayList<Double> historyAmounts = new ArrayList<Double>();
 	private ArrayList<Integer> historyTimes = new ArrayList<Integer>();
 	private ArrayList<Integer> historyModes = new ArrayList<Integer>();
 	private ArrayList<Integer> historyQuantities = new ArrayList<Integer>();
@@ -56,7 +56,7 @@ public class History {
 			
 			historyUsers.add(UUID.fromString(res.getString("CustomerId")));
 			historyItems.add(res.getString("ItemId"));
-			historyAmounts.add(res.getInt("Amount"));
+			historyAmounts.add(res.getDouble("Amount"));
 			historyTimes.add(res.getInt("Time"));
 			historyModes.add(res.getInt("Mode"));
 			historyQuantities.add(res.getInt("Quantity"));
@@ -104,7 +104,7 @@ public class History {
 		ArrayList<Integer> times = new ArrayList<Integer>();
 		
 		for(UUID userId : historyUsers) {
-			Integer amount = historyAmounts.get(index);
+			Double amount = historyAmounts.get(index);
 			String itemId = historyItems.get(index);
 			Integer time = historyTimes.get(index);
 			Integer mode = historyModes.get(index);
@@ -149,7 +149,7 @@ public class History {
 			Integer totalItems = Integer.parseInt(arr[5]);
 			totalItems = totalItems * (Multiplier);
 			
-			Integer money = Integer.parseInt(arr[1]) * Multiplier;
+			Double money = Double.parseDouble(arr[1]) * Multiplier;
 			
 			msgString = msgString.replace("{player}", Bukkit.getOfflinePlayer(UUID.fromString(arr[0])).getName());
 			msgString = msgString.replace("{count}", totalItems.toString());

@@ -81,7 +81,7 @@ public class Main extends JavaPlugin implements Listener {
 		try {
 			Statement statement = c.createStatement();
 			
-			statement.executeUpdate("CREATE TABLE IF NOT EXISTS csnUUID (Id int(11) AUTO_INCREMENT, ShopOwnerId VARCHAR(36), CustomerId VARCHAR(36), ItemId VARCHAR(1000), Mode INT(11), Amount INT(11), Quantity INT(11), Time INT(11), Unread INT(11), PRIMARY KEY (Id))");
+			statement.executeUpdate("CREATE TABLE IF NOT EXISTS csnUUID (Id int(11) AUTO_INCREMENT, ShopOwnerId VARCHAR(36), CustomerId VARCHAR(36), ItemId VARCHAR(1000), Mode INT(11), Amount FLOAT(53), Quantity INT(11), Time INT(11), Unread INT(11), PRIMARY KEY (Id))");
 			
 			c.close();
 		} catch (SQLException e) {
@@ -280,7 +280,7 @@ public class Main extends JavaPlugin implements Listener {
 		
 		Integer mode = (f == TransactionType.BUY) ? 1 : 2;
 		
-		Integer price = (int) e.getPrice();
+		double price = e.getPrice();
 		UUID clientId = e.getClient().getUniqueId();
 
 		StringBuilder items = new StringBuilder(50);
@@ -294,7 +294,7 @@ public class Main extends JavaPlugin implements Listener {
         String itemId = items.toString();
         Integer itemQuant = itemQuantitys;
         
-        batch.add("('" + ownerId.toString() + "', '" + clientId.toString() + "', '" + itemId + "', '" + mode.toString() + "', '" + price.toString() + "', '" + Time.GetEpochTime() + "', '" + itemQuant.toString() + "', '0')");
+        batch.add("('" + ownerId.toString() + "', '" + clientId.toString() + "', '" + itemId + "', '" + mode.toString() + "', '" + String.valueOf(price) + "', '" + Time.GetEpochTime() + "', '" + itemQuant.toString() + "', '0')");
         
         debug("Item added to batch.");
         
