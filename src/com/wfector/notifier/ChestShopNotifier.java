@@ -55,7 +55,6 @@ public class ChestShopNotifier extends JavaPlugin implements Listener {
 	public boolean logAdminShop = true;
 	
 	ChestShopNotifier plugin = this;
-	Integer theAmount = 0;
 	ArrayList<UUID> notifyusers_ids = new ArrayList<UUID>();
 	ArrayList<Integer> notifyusers_sales = new ArrayList<Integer>();
 	ArrayList<Integer> notifyusers_times = new ArrayList<Integer>();
@@ -190,7 +189,6 @@ public class ChestShopNotifier extends JavaPlugin implements Listener {
 		
 		final Player p = e.getPlayer();
 		final UUID pId = p.getUniqueId();
-		this.theAmount = 0;
 
 		if(!pluginEnabled) {
 			debug("Cannot notify user. Plugin is disabled.");
@@ -231,24 +229,19 @@ public class ChestShopNotifier extends JavaPlugin implements Listener {
 					e.printStackTrace();
 				}
 				
-				if(p.isOnline()) {
-					if(amount > 0) 
-						plugin.theAmount = amount;
-				}
-				
 				try {
 					batchConnection.close();
 				} catch (SQLException e) {
 					e.printStackTrace();
 				}
 				
-				if(theAmount > 0 && p.isOnline()) {
+				if(amount > 0 && p.isOnline()) {
 					Date dt = new Date();
 					debug("Added message to queue (delay s: " + joinNotificationDelay + ")");
 					Integer SendTime = (int) (dt.getTime() / 1000) + joinNotificationDelay;
 					
 					plugin.notifyusers_ids.add(pId);
-					plugin.notifyusers_sales.add(theAmount);
+					plugin.notifyusers_sales.add(amount);
 					plugin.notifyusers_times.add(SendTime);
 					plugin.newNotifications = true;
 				}
@@ -329,6 +322,7 @@ public class ChestShopNotifier extends JavaPlugin implements Listener {
 		debug("Finished.");
 		notifyusers_ids.clear();
 		notifyusers_sales.clear();
+		notifyusers_times.clear();
 		
 		newNotifications = false;
 	}
