@@ -7,9 +7,9 @@ import org.bukkit.scheduler.BukkitRunnable;
 public class Runner
   extends BukkitRunnable
 {
-  private Main plugin;
+  private ChestShopNotifier plugin;
   
-  public Runner(Main main)
+  public Runner(ChestShopNotifier main)
   {
     this.plugin = main;
   }

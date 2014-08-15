@@ -10,12 +10,12 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import com.wfector.notifier.Main;
+import com.wfector.notifier.ChestShopNotifier;
 
 public class CommandRunner {
-	private Main plugin;
+	private ChestShopNotifier plugin;
 	
-	public void SetPlugin(Main m) {
+	public void SetPlugin(ChestShopNotifier m) {
 		this.plugin = m;
 	}
 

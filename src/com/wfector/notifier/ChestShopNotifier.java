@@ -30,7 +30,7 @@ import com.wfector.util.Time;
 import code.husky.mysql.MySQL;
 import static com.Acrobot.Breeze.Utils.MaterialUtil.getSignName;
 
-public class Main extends JavaPlugin implements Listener {
+public class ChestShopNotifier extends JavaPlugin implements Listener {
 	
 	public MySQL MySQL;
 	Connection c = null;
@@ -54,7 +54,7 @@ public class Main extends JavaPlugin implements Listener {
 	public boolean newNotifications = false;
 	public boolean logAdminShop = true;
 	
-	Main plugin = this;
+	ChestShopNotifier plugin = this;
 	Integer theAmount = 0;
 	ArrayList<UUID> notifyusers_ids = new ArrayList<UUID>();
 	ArrayList<Integer> notifyusers_sales = new ArrayList<Integer>();
