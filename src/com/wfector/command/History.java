@@ -105,17 +105,17 @@ public class History {
 		
 		for(UUID userId : historyUsers) {
 			Double amount = historyAmounts.get(index);
-			String itemId = historyItems.get(index);
+			String itemName = historyItems.get(index);
 			Integer time = historyTimes.get(index);
 			Integer mode = historyModes.get(index);
 			Integer quantity = historyQuantities.get(index);
 
-			itemId = ItemConverter.GetItemName(itemId);
+			itemName = ItemConverter.GetItemName(itemName);
 			
 			String[] arr = {
 				userId.toString(),
 				amount.toString(),
-				itemId,
+				itemName,
 				time.toString(),
 				mode.toString(),
 				quantity.toString()
