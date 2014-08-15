@@ -92,18 +92,7 @@ public class ChestShopNotifier extends JavaPlugin implements Listener {
 		}
 		
 		if(this.isEnabled() && pluginEnabled) {
-		    Bukkit.getScheduler().runTaskTimerAsynchronously(this, new Runnable() {
-
-				@Override
-				public void run() {
-					try {
-						runBatch();
-					} catch (SQLException e) {
-						e.printStackTrace();
-					}
-				} 
-			}, 2000L, 2000L);
-		    
+		    		    
 		    Bukkit.getScheduler().runTaskTimer(this, new Runnable() {
 
 				@Override
@@ -298,6 +287,13 @@ public class ChestShopNotifier extends JavaPlugin implements Listener {
         
         debug("Item added to batch.");
         
+        try {
+			this.runBatch();
+		} catch (SQLException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+        
 		return true;
 	}
 		
@@ -305,6 +301,7 @@ public class ChestShopNotifier extends JavaPlugin implements Listener {
 	    try {
 	    	this.database = MySQL.openConnection();
 	    } catch (Exception e) {
+	    	this.getLogger().warning("Could not establish database connection!");
 	    	return false;
 	    }
 		return true;
@@ -340,7 +337,7 @@ public class ChestShopNotifier extends JavaPlugin implements Listener {
 
 	public void runBatch() throws SQLException {
 		
-		debug("Running a batch...");
+		debug("Uploading a batch...");
 		
 		if(batch.isEmpty()) return;
 		if(!pluginEnabled) return;
