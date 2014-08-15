@@ -312,11 +312,10 @@ public class ChestShopNotifier extends JavaPlugin implements Listener {
 		if(!newNotifications) return;
 		if(!pluginEnabled) return;
 		
-		int i = 0;
-		
-		for(UUID userid : notifyusers_ids) {
+		for(int i = 0; i < notifyusers_ids.size(); i++) {
 			Integer sales = notifyusers_sales.get(i);
-				
+			UUID userid = notifyusers_ids.get(i);
+			
 			Player p = Bukkit.getPlayer(userid);
 			if(p != null) {
 				debug("Ran for user '" + p.getName() + "'");
