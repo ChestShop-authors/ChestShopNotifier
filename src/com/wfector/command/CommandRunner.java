@@ -1,7 +1,9 @@
 package com.wfector.command;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.UUID;
+import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -15,8 +17,8 @@ import com.wfector.notifier.ChestShopNotifier;
 public class CommandRunner {
 	private ChestShopNotifier plugin;
 	
-	public void SetPlugin(ChestShopNotifier m) {
-		this.plugin = m;
+	public void SetPlugin(ChestShopNotifier plugin) {
+		this.plugin = plugin;
 	}
 
 	@SuppressWarnings("deprecation")
@@ -42,10 +44,59 @@ public class CommandRunner {
 				
 				return;
 			}
+			
+			if(args[0].equalsIgnoreCase("convert") && sender.hasPermission("csn.admin")) {
+				final Connection conn = plugin.getConnection();
+				if(this.plugin.pluginEnabled == false || conn == null) {
+					sender.sendMessage(ChatColor.RED + "Invalid database connection. Please edit config and /csn reload.");
+					return;
+				}
+				
+				sender.sendMessage(ChatColor.RED + "Attempting to convert database...");
+				plugin.getLogger().log(Level.INFO, "Attempting to convert database...");
+				final CommandSender senderfinal = sender;
+				
+				Bukkit.getScheduler().runTaskAsynchronously(this.plugin, new Runnable() {
+					@Override
+					public void run() {						
+						if(new Converter(plugin,conn).convertDatabase()) {
+							senderfinal.sendMessage(ChatColor.RED + "Database converted!");
+							plugin.getLogger().log(Level.INFO, "Database converted!");
+						} else {
+							senderfinal.sendMessage(ChatColor.RED + "Table to convert not found!");
+							plugin.getLogger().log(Level.SEVERE, "Table to convert not found!");
+						}
+					};
+				});
+				
+				
+				
+				
+				
+				return;
+			}
+			
+			if(args[0].equalsIgnoreCase("upload") && sender.hasPermission("csn.admin")) {
+				if(this.plugin.pluginEnabled == false) {
+					sender.sendMessage(ChatColor.RED + "Invalid database connection. Please edit config and /csn reload.");
+					return;
+				}
+				
+				try {
+					this.plugin.runBatch();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+				sender.sendMessage(ChatColor.RED + "Batch executed!");
+				
+				return;
+			}
+			
 			if(args[0].equalsIgnoreCase("help") && sender.hasPermission("csn.user")) {
 				Help.SendDialog(sender);
 				return;
 			}
+			
 			if(args[0].equalsIgnoreCase("history") && sender.hasPermission("csn.user")) {
 				OfflinePlayer target;
 				
@@ -96,21 +147,7 @@ public class CommandRunner {
 				
 				return;
 			}
-			if(args[0].equalsIgnoreCase("upload") && sender.hasPermission("csn.admin")) {
-				if(this.plugin.pluginEnabled == false) {
-					sender.sendMessage(ChatColor.RED + "Invalid database connection. Please edit config and /csn reload.");
-					return;
-				}
-				
-				try {
-					this.plugin.runBatch();
-				} catch (SQLException e) {
-					e.printStackTrace();
-				}
-				sender.sendMessage(ChatColor.RED + "Batch executed!");
-				
-				return;
-			}
+			
 			if(args[0].equalsIgnoreCase("clear") && sender.hasPermission("csn.user")) {
 				if(this.plugin.pluginEnabled == false) {
 					sender.sendMessage(ChatColor.RED + "Invalid database connection. Please edit config and /csn reload.");

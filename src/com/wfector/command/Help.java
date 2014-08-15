@@ -20,6 +20,7 @@ public class Help {
 		if(sender.isOp() || sender.hasPermission("csn.admin")) {
 			helpItems.add("&c ");
 			helpItems.add("&7- /csn &dupload &f- Force update databases");
+			helpItems.add("&7- /csn &dconvert &f- Convert database to UUIDs");
 			helpItems.add("&7- /csn &dreload &f- Reload configuration");
 		}
 		
