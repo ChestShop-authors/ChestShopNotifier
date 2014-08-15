@@ -1,4 +1,4 @@
-main: com.wfector.notifier.Main
+main: com.wfector.notifier.ChestShopNotifier
 name: ChestShopNotifier
 version: 1.1.1
 description: Shows all transactions made in your ChestShops throughout history.
