@@ -1,6 +1,6 @@
 # Chest Shop Notifier
-# Config file for 1.1.0
-# August 5 2014
+# Config file for 1.1.2
+# August 19 2014
 
 logging:
   admin-shop: true
@@ -24,7 +24,7 @@ messages:
   history-cmd: "&c ** To see them, type &f/csn history&c."
   history-caption: "&dChestShop Notifier // &7Latest Commissions"
   history-empty: "&cNothing to show."
-  history-bought: "&9{player} &7bought &a{count}x&9{item} &f{timeago} ago &a(+{money})"
-  history-sold: "&9{player} &7sold you &c{count}x&9{item} &f{timeago} ago &c(-{money})"
+  history-bought: "&f+ &9{player} &7bought &a{count}x&9{item} &f{timeago} ago &a(+{money})"
+  history-sold: "&f- &9{player} &7sold you &c{count}x&9{item} &f{timeago} ago &c(-{money})"
   history-read: "&c- To mark these as read, type /csn clear"
   history-clear: "&cHistory cleared! New sales will continue to be recorded."
