@@ -13,6 +13,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import com.wfector.notifier.ChestShopNotifier;
+import com.wfector.util.Converter;
 
 public class CommandRunner {
 	private ChestShopNotifier plugin;
@@ -63,8 +64,8 @@ public class CommandRunner {
 							senderfinal.sendMessage(ChatColor.RED + "Database converted!");
 							plugin.getLogger().log(Level.INFO, "Database converted!");
 						} else {
-							senderfinal.sendMessage(ChatColor.RED + "Table to convert not found!");
-							plugin.getLogger().log(Level.SEVERE, "Table to convert not found!");
+							senderfinal.sendMessage(ChatColor.RED + "Error while trying to convert! Maybe you don't have a 'csn' table?");
+							plugin.getLogger().log(Level.SEVERE, "Error while trying to convert! Maybe you don't have a 'csn' table?");
 						}
 					};
 				});
