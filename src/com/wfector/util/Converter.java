@@ -57,6 +57,9 @@ public class Converter {
 					
 				}
 			}
+			
+			this.conn.createStatement().executeUpdate("ALTER TABLE `csn` RENAME TO `csnOLD`");
+			
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
