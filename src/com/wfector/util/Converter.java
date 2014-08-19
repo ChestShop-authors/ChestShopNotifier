@@ -1,4 +1,4 @@
-package com.wfector.command;
+package com.wfector.util;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -40,7 +40,7 @@ public class Converter {
 				UUID customerId = this.getPlayerID(costumer);
 				
 				if(shopOwnerId != null && customerId != null) {
-					PreparedStatement prepsta = this.conn.prepareStatement("INSERT INTO csnUUID (`ShopOwnerId`, `CustomerId`, `ItemId`, `Mode`, `Amount`, `Time`, `Quantity`, `Unread`) VALUES ?, ?, ?, ?, ?, ?, ?, ?");
+					PreparedStatement prepsta = this.conn.prepareStatement("INSERT INTO csnUUID (`ShopOwnerId`, `CustomerId`, `ItemId`, `Mode`, `Amount`, `Time`, `Quantity`, `Unread`) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
 					
 					prepsta.setString(1, shopOwnerId.toString());
 			        prepsta.setString(2, customerId.toString());
@@ -54,6 +54,7 @@ public class Converter {
 			        prepsta.execute();
 			        
 				    prepsta.close();
+					
 				}
 			}
 		} catch (SQLException e) {
