@@ -25,7 +25,7 @@ public class CommandRunner {
 	@SuppressWarnings("deprecation")
 	public void Process(CommandSender sender, Command cmd, String label, String[] args) {
 		if(args.length == 0) {
-			sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&cCommand usage: /csn help"));
+			Help.SendDialog(sender);
 			return;
 		}
 		else {
