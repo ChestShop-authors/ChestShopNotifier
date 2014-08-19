@@ -48,7 +48,7 @@ public class ChestShopNotifier extends JavaPlugin implements Listener {
 	private String dbUsername;
 	private String dbPassword;
 	
-	private Connection database;
+	private Connection conn;
 	
 	public boolean pluginEnabled = false;
 	public boolean newNotifications = false;
@@ -201,7 +201,7 @@ public class ChestShopNotifier extends JavaPlugin implements Listener {
 			public void run() {
 				Connection batchConnection;
 				if(!connect()) return;
-				batchConnection = plugin.database;
+				batchConnection = plugin.conn;
 				
 				Statement statement = null;
 				try {
@@ -292,7 +292,7 @@ public class ChestShopNotifier extends JavaPlugin implements Listener {
 		
 	public boolean connect() {
 	    try {
-	    	this.database = MySQL.openConnection();
+	    	this.conn = MySQL.openConnection();
 	    } catch (Exception e) {
 	    	this.getLogger().warning("Could not establish database connection!");
 	    	return false;
@@ -338,7 +338,7 @@ public class ChestShopNotifier extends JavaPlugin implements Listener {
 		
 		if(batch.size() > 0) {
 			
-			Connection batchConnection = this.database;
+			Connection batchConnection = this.conn;
 			
 			String qstr = "INSERT INTO csnUUID (`ShopOwnerId`, `CustomerId`, `ItemId`, `Mode`, `Amount`, `Time`, `Quantity`, `Unread`) VALUES ";
 			
@@ -367,6 +367,12 @@ public class ChestShopNotifier extends JavaPlugin implements Listener {
 	public void debug(String d) {
 		if(verboseEnabled)
 			this.getLogger().log(Level.INFO, d);
+	}
+
+	public Connection getConnection() {
+		if(!this.connect()) return null;
+		return this.conn;
+		
 	}
 	
 }
