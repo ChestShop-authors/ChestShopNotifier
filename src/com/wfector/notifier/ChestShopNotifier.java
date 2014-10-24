@@ -279,13 +279,17 @@ public class ChestShopNotifier extends JavaPlugin implements Listener {
         batch.add("('" + ownerId.toString() + "', '" + clientId.toString() + "', '" + itemId + "', '" + mode.toString() + "', '" + String.valueOf(price) + "', '" + Time.GetEpochTime() + "', '" + itemQuant.toString() + "', '0')");
         
         debug("Item added to batch.");
-        
-        try {
-			this.runBatch();
-		} catch (SQLException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
+        Bukkit.getScheduler().runTask(this, new Runnable() {
+        	@Override
+        	public void run() {
+		        try {
+					runBatch();
+				} catch (SQLException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+        	}
+        });
         
 		return true;
 	}
