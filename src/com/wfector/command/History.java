@@ -68,19 +68,9 @@ public class History {
 		int i = 0;
 		
 		for(String[] arr : data) {
-			boolean match = false;
-	
-			if(arr[0].equalsIgnoreCase(search[0])) match = true;
-			else match = false;
-			
-			if(arr[1].equalsIgnoreCase(search[1]) && match) match = true;
-			else match = false;
-			
-			if(arr[4].equalsIgnoreCase(search[4]) && match) match = true;
-			else match = false;
-			
-			if(match) return i;
-				
+			boolean match = arr[0].equals(search[0]) && arr[1].equals(search[1]) && arr[4].equals(search[4]);			
+			if(match) 
+                return i;				
 			i++;
 		}
 		
