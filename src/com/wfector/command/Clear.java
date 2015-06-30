@@ -9,16 +9,16 @@ import code.husky.mysql.MySQL;
 
 public class Clear {
 
-	public static void ClearHistory(MySQL m, UUID userId) {
-		Connection c = m.openConnection();
-		
-		try {
-			Statement statement = c.createStatement();
-			statement.executeUpdate("UPDATE csnUUID SET `Unread`='1' WHERE `ShopOwnerId`='" + userId.toString() + "'");
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		
-	}
-	
+    public static void ClearHistory(MySQL m, UUID userId) {
+        Connection c = m.openConnection();
+
+        try {
+            Statement statement = c.createStatement();
+            statement.executeUpdate("UPDATE csnUUID SET `Unread`='1' WHERE `ShopOwnerId`='" + userId.toString() + "'");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+    }
+
 }
