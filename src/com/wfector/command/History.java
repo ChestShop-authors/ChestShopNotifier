@@ -67,7 +67,7 @@ public class History {
         int i = 0;
 
         for(String[] arr : data) {
-            boolean match = arr[0].equals(search[0]) && arr[1].equals(search[1]) && arr[4].equals(search[4]);
+            boolean match = arr[0].equals(search[0]) && arr[1].equals(search[1]) && arr[2].equals(search[2]) && arr[4].equals(search[4]);
             if(match)
                 return i;
             i++;
