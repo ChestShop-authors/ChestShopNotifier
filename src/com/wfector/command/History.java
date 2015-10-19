@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.UUID;
 
-import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 
 import code.husky.mysql.MySQL;
@@ -140,7 +139,9 @@ public class History {
 
             Double money = Double.parseDouble(arr[1]) * Multiplier;
 
-            msgString = msgString.replace("{player}", Bukkit.getOfflinePlayer(UUID.fromString(arr[0])).getName());
+            String playerName = plugin.getServer().getOfflinePlayer(UUID.fromString(arr[0])).getName();
+
+            msgString = msgString.replace("{player}", playerName != null ? playerName : "unknown");
             msgString = msgString.replace("{count}", totalItems.toString());
             msgString = msgString.replace("{item}", arr[2].replace(" ", ""));
             msgString = msgString.replace("{timeago}", Time.GetAgo(Integer.parseInt(arr[3])));
