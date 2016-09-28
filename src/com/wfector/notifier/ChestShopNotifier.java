@@ -28,6 +28,8 @@ import com.wfector.command.CommandRunner;
 import com.wfector.util.Time;
 
 import code.husky.mysql.MySQL;
+import org.bukkit.scheduler.BukkitRunnable;
+
 import static com.Acrobot.Breeze.Utils.MaterialUtil.getSignName;
 
 public class ChestShopNotifier extends JavaPlugin implements Listener {
@@ -35,29 +37,20 @@ public class ChestShopNotifier extends JavaPlugin implements Listener {
     public MySQL MySQL;
     Connection c = null;
 
-    private FileConfiguration config;
     private ArrayList<String> batch = new ArrayList<String>();
 
     private boolean verboseEnabled;
     private boolean joinNotificationEnabled;
     private Integer joinNotificationDelay;
 
-    private String dbHost;
-    private Integer dbPort;
-    private String dbName;
-    private String dbUsername;
-    private String dbPassword;
-
     private Connection conn;
 
     public boolean pluginEnabled = false;
-    public boolean newNotifications = false;
     public boolean logAdminShop = true;
 
     ChestShopNotifier plugin = this;
-    ArrayList<UUID> notifyusers_ids = new ArrayList<UUID>();
-    ArrayList<Integer> notifyusers_sales = new ArrayList<Integer>();
-    ArrayList<Integer> notifyusers_times = new ArrayList<Integer>();
+
+    private Notifier notifier;
 
     public void onEnable() {
         this.saveDefaultConfig();
@@ -75,34 +68,29 @@ public class ChestShopNotifier extends JavaPlugin implements Listener {
 
         pluginEnabled = true;
 
-        this.getLogger().log(Level.INFO, "Connected!");
+        getLogger().log(Level.INFO, "Connected!");
 
         try {
             Statement statement = c.createStatement();
 
             statement.executeUpdate("CREATE TABLE IF NOT EXISTS csnUUID (Id int(11) AUTO_INCREMENT, ShopOwnerId VARCHAR(36), CustomerId VARCHAR(36), ItemId VARCHAR(1000), Mode INT(11), Amount FLOAT(53), Quantity INT(11), Time INT(11), Unread INT(11), PRIMARY KEY (Id))");
 
-            c.close();
         } catch (SQLException e) {
             e.printStackTrace();
 
-            this.setEnabled(false);
+            setEnabled(false);
             return;
+        } finally {
+            try {
+                c.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
 
-        if(this.isEnabled() && pluginEnabled) {
-
-            Bukkit.getScheduler().runTaskTimer(this, new Runnable() {
-
-                @Override
-                public void run() {
-                    try {
-                        runNotifier();
-                    } catch (SQLException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }, 60L, 60L);
+        if(isPluginEnabled()) {
+            notifier = new Notifier(this);
+            notifier.runTaskTimer(this, 60, 60);
 
             getServer().getPluginManager().registerEvents(this, this);
         }
@@ -121,32 +109,36 @@ public class ChestShopNotifier extends JavaPlugin implements Listener {
 
     }
 
+    public boolean isPluginEnabled() {
+        return isEnabled() && pluginEnabled;
+    }
+
     public boolean updateConfiguration(boolean isReload) {
-        if(isReload) this.reloadConfig();
+        if(isReload) {
+            reloadConfig();
+        }
 
-        this.config = this.getConfig();
+        verboseEnabled = getConfig().getBoolean("debugging.verbose");
+        joinNotificationEnabled = getConfig().getBoolean("notifications.notify-on-user-join");
+        joinNotificationDelay = getConfig().getInt("notifications.delay-seconds");
 
-        verboseEnabled = this.config.getBoolean("debugging.verbose");
-        joinNotificationEnabled = this.config.getBoolean("notifications.notify-on-user-join");
-        joinNotificationDelay = this.config.getInt("notifications.delay-seconds");
+        String dbHost = getConfig().getString("database.host");
+        int dbPort = getConfig().getInt("database.port");
+        String dbName = getConfig().getString("database.dbname");
+        String dbUsername = getConfig().getString("database.username");
+        String dbPassword = getConfig().getString("database.password");
 
-        this.dbHost = this.config.getString("database.host");
-        this.dbPort = this.config.getInt("database.port");
-        this.dbName = this.config.getString("database.dbname");
-        this.dbUsername = this.config.getString("database.username");
-        this.dbPassword = this.config.getString("database.password");
-
-        this.logAdminShop = this.config.getBoolean("logging.admin-shop");
+        logAdminShop = getConfig().getBoolean("logging.admin-shop");
 
         if(isReload) {
-            MySQL = new MySQL(this, dbHost, dbPort.toString(), dbName, dbUsername, dbPassword);
+            MySQL = new MySQL(this, dbHost, String.valueOf(dbPort), dbName, dbUsername, dbPassword);
 
-            this.getLogger().log(Level.INFO, "Connecting to the database...");
+            getLogger().log(Level.INFO, "Connecting to the database...");
 
             c = MySQL.openConnection();
 
             if(c == null) {
-                this.getLogger().log(Level.WARNING, "Failed to connect to the database! Disabling connections!");
+                getLogger().log(Level.WARNING, "Failed to connect to the database! Disabling connections!");
 
                 pluginEnabled = false;
                 return false;
@@ -162,7 +154,7 @@ public class ChestShopNotifier extends JavaPlugin implements Listener {
      * @return The message or null if it doesn't exist
      */
     public String getMessage(String string) {
-        return (this.getConfig().contains("messages." + string)) ? ChatColor.translateAlternateColorCodes('&', this.getConfig().getString("messages." + string)) : null;
+        return (getConfig().contains("messages." + string)) ? ChatColor.translateAlternateColorCodes('&', getConfig().getString("messages." + string)) : null;
     }
 
     @Override
@@ -180,7 +172,7 @@ public class ChestShopNotifier extends JavaPlugin implements Listener {
 
     @EventHandler
     public void onPlayerJoinEvent(PlayerJoinEvent e) {
-        if(joinNotificationEnabled == false) {
+        if(joinNotificationEnabled) {
             debug("Join notifications are " + joinNotificationEnabled + ", skipping...");
             return;
         }
@@ -190,18 +182,18 @@ public class ChestShopNotifier extends JavaPlugin implements Listener {
         final Player p = e.getPlayer();
         final UUID pId = p.getUniqueId();
 
-        if(!pluginEnabled) {
+        if(!isPluginEnabled()) {
             debug("Cannot notify user. Plugin is disabled.");
             return;
         }
 
-        Bukkit.getScheduler().runTaskAsynchronously(this, new Runnable() {
+        new BukkitRunnable() {
 
             @Override
             public void run() {
                 Connection batchConnection;
-                if(!connect()) return;
-                batchConnection = plugin.conn;
+                if (!connect()) return;
+                batchConnection = plugin.getConnection();
 
                 Statement statement = null;
                 try {
@@ -220,8 +212,8 @@ public class ChestShopNotifier extends JavaPlugin implements Listener {
 
                 Integer amount = 0;
                 try {
-                    if(res.getMetaData().getColumnCount() > 0)
-                        while(res.next())
+                    if (res.getMetaData().getColumnCount() > 0)
+                        while (res.next())
                             amount++;
 
                     debug("Found rows: " + amount.toString());
@@ -235,19 +227,16 @@ public class ChestShopNotifier extends JavaPlugin implements Listener {
                     e.printStackTrace();
                 }
 
-                if(amount > 0 && p.isOnline()) {
+                if (amount > 0 && p.isOnline()) {
                     Date dt = new Date();
                     debug("Added message to queue (delay s: " + joinNotificationDelay + ")");
                     Integer SendTime = (int) (dt.getTime() / 1000) + joinNotificationDelay;
 
-                    plugin.notifyusers_ids.add(pId);
-                    plugin.notifyusers_sales.add(amount);
-                    plugin.notifyusers_times.add(SendTime);
-                    plugin.newNotifications = true;
+                    plugin.getNotifier().add(pId, amount, SendTime);
                 }
             }
 
-        });
+        }.runTaskAsynchronously(this);
 
         debug("Done.");
     }
@@ -304,33 +293,6 @@ public class ChestShopNotifier extends JavaPlugin implements Listener {
         return true;
     }
 
-    public void runNotifier() throws SQLException {
-
-        if(!newNotifications) return;
-        if(!pluginEnabled) return;
-
-        for(int i = 0; i < notifyusers_ids.size(); i++) {
-            Integer sales = notifyusers_sales.get(i);
-            UUID userid = notifyusers_ids.get(i);
-
-            Player p = Bukkit.getPlayer(userid);
-            if(p != null) {
-                debug("Ran for user '" + p.getName() + "'");
-                if(plugin.getMessage("sales") != null) p.sendMessage(this.getMessage("sales").replace("{sales}", sales.toString()));
-                if(plugin.getMessage("history-cmd") != null) p.sendMessage(this.getMessage("history-cmd"));
-            } else {
-                debug("Warning: The player with the uuid '" + userid + "' could not be found, yet was in queue.");
-            }
-        }
-
-        debug("Finished.");
-        notifyusers_ids.clear();
-        notifyusers_sales.clear();
-        notifyusers_times.clear();
-
-        newNotifications = false;
-    }
-
 
     public void runBatch() throws SQLException {
 
@@ -379,4 +341,7 @@ public class ChestShopNotifier extends JavaPlugin implements Listener {
 
     }
 
+    public Notifier getNotifier() {
+        return notifier;
+    }
 }
