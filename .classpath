@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<classpath>
-	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7"/>
-	<classpathentry kind="lib" path="C:/Users/Bailey/Downloads/bukkit-1.7.8-R0.1-20140412.033659-1.jar"/>
-	<classpathentry kind="lib" path="C:/Users/Bailey/Downloads/Vault (2).jar"/>
-	<classpathentry kind="lib" path="C:/Users/Bailey/Downloads/ChestShop.jar"/>
-	<classpathentry kind="output" path="bin"/>
-</classpath>
