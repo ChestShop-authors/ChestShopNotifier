@@ -195,44 +195,38 @@ public class ChestShopNotifier extends JavaPlugin implements Listener {
                 if (!connect()) return;
                 batchConnection = plugin.getConnection();
 
-                Statement statement = null;
+                Statement statement;
+                ResultSet res;
                 try {
                     statement = batchConnection.createStatement();
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-                ResultSet res = null;
-                try {
+
                     res = statement.executeQuery("SELECT `ShopOwnerId` FROM csnUUID WHERE `ShopOwnerId`='" + pId.toString() + "' AND `Unread`='0'");
 
                     res.next();
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
 
-                Integer amount = 0;
-                try {
+                    int amount = 0;
                     if (res.getMetaData().getColumnCount() > 0)
                         while (res.next())
                             amount++;
 
-                    debug("Found rows: " + amount.toString());
+                    debug("Found rows: " + String.valueOf(amount));
+
+                    if (amount > 0 && p.isOnline()) {
+                        Date dt = new Date();
+                        debug("Added message to queue (delay s: " + joinNotificationDelay + ")");
+                        int sendTime = (int) (dt.getTime() / 1000) + joinNotificationDelay;
+
+                        plugin.getNotifier().add(pId, amount, sendTime);
+                    }
+
                 } catch (SQLException e) {
                     e.printStackTrace();
-                }
-
-                try {
-                    batchConnection.close();
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-
-                if (amount > 0 && p.isOnline()) {
-                    Date dt = new Date();
-                    debug("Added message to queue (delay s: " + joinNotificationDelay + ")");
-                    Integer SendTime = (int) (dt.getTime() / 1000) + joinNotificationDelay;
-
-                    plugin.getNotifier().add(pId, amount, SendTime);
+                } finally {
+                    try {
+                        batchConnection.close();
+                    } catch (SQLException e1) {
+                        e1.printStackTrace();
+                    }
                 }
             }
 
