@@ -4,7 +4,7 @@ CSN (ChestShop Notifier) is a plugin that records ChestShop transactions to a My
 
 ##Downloads
 
-You can download release versions of the plugin from the [ChestShopNotifier Bukkit dev page](dev.bukkit.org/bukkit-plugins/csn/)!
+You can download release versions of the plugin from the [ChestShopNotifier Bukkit dev page](https://dev.bukkit.org/bukkit-plugins/csn/)!
 
 Development builds can be found on the [Minebench.de](https://www.minebench.de/) Jenkins build server: http://ci.minebench.de/job/ChestShopNotifier/
 
