@@ -8,25 +8,31 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Date;
+import java.util.UUID;
 import java.util.logging.Level;
 
 public class LoginRunner extends BukkitRunnable {
     private final ChestShopNotifier plugin;
-    private final Player player;
+    private final UUID playerId;
 
-    public LoginRunner(ChestShopNotifier plugin, Player player) {
+    public LoginRunner(ChestShopNotifier plugin, UUID playerId) {
         this.plugin = plugin;
-        this.player = player;
+        this.playerId = playerId;
     }
 
     @Override
     public void run() {
         Connection conn = null;
+        Player p = plugin.getServer().getPlayer(playerId);
+        if(p == null || !p.isOnline()) {
+            // player is no longer online
+            return;
+        }
         try {
             conn = plugin.getConnection();
             Statement statement = conn.createStatement();
 
-            ResultSet res = statement.executeQuery("SELECT `ShopOwnerId` FROM csnUUID WHERE `ShopOwnerId`='" + player.getUniqueId().toString() + "' AND `Unread`='0'");
+            ResultSet res = statement.executeQuery("SELECT `ShopOwnerId` FROM csnUUID WHERE `ShopOwnerId`='" + playerId.toString() + "' AND `Unread`='0'");
 
             res.next();
 
@@ -37,14 +43,18 @@ public class LoginRunner extends BukkitRunnable {
 
             plugin.debug("Found rows: " + String.valueOf(amount));
 
-            if (amount > 0 && player.isOnline()) {
-                Date dt = new Date();
-                plugin.debug("Added message to queue (delay s: " + plugin.getJoinNotificationDelay() + ")");
-                int sendTime = (int) (dt.getTime() / 1000) + plugin.getJoinNotificationDelay();
+            if (amount > 0) {
+                plugin.debug("Ran for user '" + p.getName() + "'");
+                if(plugin.getMessage("sales") != null) {
+                    p.sendMessage(plugin.getMessage("sales").replace("{sales}", String.valueOf(amount)));
+                }
 
-                plugin.getNotifier().add(player.getUniqueId(), amount, sendTime);
+                if(plugin.getMessage("history-cmd") != null) {
+                    p.sendMessage(plugin.getMessage("history-cmd"));
+                }
+            } else {
+                plugin.debug("Warning: The player with the uuid '" + playerId + "' could not be found, yet was in queue.");
             }
-
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {

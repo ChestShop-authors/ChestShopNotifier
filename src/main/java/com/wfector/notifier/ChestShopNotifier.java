@@ -40,16 +40,11 @@ public class ChestShopNotifier extends JavaPlugin implements Listener {
     public boolean pluginEnabled = false;
     public boolean logAdminShop = true;
 
-    private Notifier notifier;
-
     public void onEnable() {
         getCommand("csn").setExecutor(new CommandRunner(this));
 
         saveDefaultConfig();
         updateConfiguration(null);
-
-        notifier = new Notifier(this);
-        notifier.runTaskTimer(this, 60, 60);
 
         getServer().getPluginManager().registerEvents(this, this);
     }
@@ -153,7 +148,7 @@ public class ChestShopNotifier extends JavaPlugin implements Listener {
 
         final Player p = e.getPlayer();
 
-        new LoginRunner(this, p).runTaskAsynchronously(this);
+        new LoginRunner(this, p.getUniqueId()).runTaskLaterAsynchronously(this, joinNotificationDelay * 20);
     }
 
     @EventHandler
@@ -197,15 +192,7 @@ public class ChestShopNotifier extends JavaPlugin implements Listener {
 
     }
 
-    public Notifier getNotifier() {
-        return notifier;
-    }
-
     public ArrayList<String> getBatch() {
         return batch;
-    }
-
-    public int getJoinNotificationDelay() {
-        return joinNotificationDelay;
     }
 }
