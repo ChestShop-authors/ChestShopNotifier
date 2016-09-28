@@ -1,170 +1,117 @@
 package com.wfector.command;
 
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.UUID;
 import java.util.logging.Level;
 
-import org.bukkit.Bukkit;
+import com.wfector.notifier.BatchRunner;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
+import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import com.wfector.notifier.ChestShopNotifier;
-import com.wfector.util.Converter;
 
-public class CommandRunner {
-    private ChestShopNotifier plugin;
+public class CommandRunner implements CommandExecutor {
+    private final ChestShopNotifier plugin;
 
-    public void SetPlugin(ChestShopNotifier plugin) {
+    public CommandRunner(ChestShopNotifier plugin) {
         this.plugin = plugin;
     }
 
-    @SuppressWarnings("deprecation")
-    public void Process(CommandSender sender, Command cmd, String label, String[] args) {
+    public boolean onCommand(final CommandSender sender, Command cmd, String label, String[] args) {
         if(args.length == 0) {
             Help.SendDialog(sender);
-            return;
-        }
-        else {
+        } else {
             if(args[0].equalsIgnoreCase("reload") && (sender.hasPermission("csn.admin"))) {
                 sender.sendMessage(ChatColor.LIGHT_PURPLE + "ChestShop Notifier // " + ChatColor.GRAY + "Reloading, please wait...");
 
-                boolean didUpdate = this.plugin.updateConfiguration(true);
-                if(didUpdate) {
-                    sender.sendMessage(ChatColor.LIGHT_PURPLE + "ChestShop Notifier // " + ChatColor.GREEN + "Reloaded!");
-                    sender.sendMessage(ChatColor.LIGHT_PURPLE + "ChestShop Notifier // " + ChatColor.GREEN + "Database connected!");
+                plugin.updateConfiguration(sender, true);
 
-                }
-                else {
-                    sender.sendMessage(ChatColor.LIGHT_PURPLE + "ChestShop Notifier // " + ChatColor.GREEN + "Reloaded!");
-                    sender.sendMessage(ChatColor.LIGHT_PURPLE + "ChestShop Notifier // " + ChatColor.RED + "Database failed to connect!");
-                }
+            } else if(args[0].equalsIgnoreCase("convert") && sender.hasPermission("csn.admin")) {
 
-                return;
-            }
-
-            if(args[0].equalsIgnoreCase("convert") && sender.hasPermission("csn.admin")) {
-                final Connection conn = plugin.getConnection();
-                if(this.plugin.pluginEnabled == false || conn == null) {
+                if(!plugin.isPluginEnabled()) {
                     sender.sendMessage(ChatColor.RED + "Invalid database connection. Please edit config and /csn reload.");
-                    return;
+                    return true;
                 }
 
                 sender.sendMessage(ChatColor.RED + "Attempting to convert database...");
                 plugin.getLogger().log(Level.INFO, "Attempting to convert database...");
-                final CommandSender senderfinal = sender;
 
-                Bukkit.getScheduler().runTaskAsynchronously(this.plugin, new Runnable() {
-                    @Override
-                    public void run() {
-                        if(new Converter(plugin,conn).convertDatabase()) {
-                            senderfinal.sendMessage(ChatColor.RED + "Database converted!");
-                            plugin.getLogger().log(Level.INFO, "Database converted!");
-                        } else {
-                            senderfinal.sendMessage(ChatColor.RED + "Error while trying to convert! Maybe you don't have a 'csn' table?");
-                            plugin.getLogger().log(Level.SEVERE, "Error while trying to convert! Maybe you don't have a 'csn' table?");
-                        }
-                    };
-                });
+                new Converter(plugin, sender).runTaskAsynchronously(plugin);
 
-
-
-
-
-                return;
-            }
-
-            if(args[0].equalsIgnoreCase("upload") && sender.hasPermission("csn.admin")) {
-                if(this.plugin.pluginEnabled == false) {
+            } else if(args[0].equalsIgnoreCase("upload") && sender.hasPermission("csn.admin")) {
+                if(!plugin.isPluginEnabled()) {
                     sender.sendMessage(ChatColor.RED + "Invalid database connection. Please edit config and /csn reload.");
-                    return;
+                    return true;
                 }
 
-                try {
-                    this.plugin.runBatch();
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
+                new BatchRunner(plugin).runTaskAsynchronously(plugin);
+
                 sender.sendMessage(ChatColor.RED + "Batch executed!");
 
-                return;
-            }
-
-            if(args[0].equalsIgnoreCase("help") && sender.hasPermission("csn.user")) {
+            } else if(args[0].equalsIgnoreCase("help") && sender.hasPermission("csn.user")) {
                 Help.SendDialog(sender);
-                return;
-            }
 
-            if(args[0].equalsIgnoreCase("history") && sender.hasPermission("csn.user")) {
+            } else  if(args[0].equalsIgnoreCase("history") && sender.hasPermission("csn.user")) {
                 OfflinePlayer target;
 
-                if(this.plugin.pluginEnabled == false) {
+                if(!plugin.isPluginEnabled()) {
                     sender.sendMessage(ChatColor.RED + "Invalid database connection. Please edit config and /csn reload.");
-                    return;
+                    return true;
                 }
 
                 if(args.length > 1) {
                     if(args.length > 2) {
                         sender.sendMessage(ChatColor.RED + "Too many arguments! /csn history [username]");
-                        return;
+                        return true;
                     }
 
                     if(sender.hasPermission("csn.history.others") || sender.hasPermission("csn.admin")) {
-                        target = Bukkit.getOfflinePlayer(args[1]);
-                    }
-                    else {
+                        target = plugin.getServer().getPlayer(args[1]);
+                        if (target == null) {
+                            plugin.getServer().getOfflinePlayer(args[1]);
+                        }
+                    } else {
                         sender.sendMessage(ChatColor.RED + "You don't have the permission to see other user's history! You can only use /csn history!");
-                        return;
+                        return true;
                     }
 
                     if(target == null) {
                         sender.sendMessage(ChatColor.RED + "The user '" + args[1] + "' was not found.");
-                        return;
+                        return true;
                     }
-                }
-                else {
+                } else {
                     if(!(sender instanceof Player)) {
                         sender.sendMessage(ChatColor.RED + "The console has no sales!");
-                        return;
+                        return true;
                     }
                     target = (Player) sender;
                 }
 
-                UUID userName = target.getUniqueId();
+                final UUID userId = target.getUniqueId();
 
-                History csh = new History(this.plugin);
-                csh.setUserId(userName);
+                new History(plugin, userId, sender).runTaskAsynchronously(plugin);
 
-                try {
-                    csh.gatherResults(this.plugin.MySQL);
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
+                return true;
 
-                csh.showResults(sender);
-
-                return;
-            }
-
-            if(args[0].equalsIgnoreCase("clear") && sender.hasPermission("csn.user")) {
-                if(this.plugin.pluginEnabled == false) {
+            } else if(args[0].equalsIgnoreCase("clear") && sender.hasPermission("csn.user")) {
+                if(!plugin.isPluginEnabled()) {
                     sender.sendMessage(ChatColor.RED + "Invalid database connection. Please edit config and /csn reload.");
-                    return;
+                    return true;
                 }
 
                 UUID senderId = (sender instanceof Player) ? ((Player) sender).getUniqueId() : UUID.fromString("00000000-0000-0000-0000-000000000000");
 
-                Clear.ClearHistory(this.plugin.MySQL, senderId);
+                new Clear(plugin, senderId).runTaskAsynchronously(plugin);
                 if(plugin.getMessage("history-clear") != null) sender.sendMessage(plugin.getMessage("history-clear"));
 
-                return;
+                return true;
             }
         }
 
         sender.sendMessage(ChatColor.RED + "Command not recognized. Type /csn help for help.");
-        return;
+        return true;
     }
 }

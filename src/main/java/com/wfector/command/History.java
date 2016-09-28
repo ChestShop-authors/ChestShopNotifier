@@ -16,10 +16,12 @@ import com.wfector.notifier.ChestShopNotifier;
 import com.wfector.util.ItemConverter;
 import com.wfector.util.Time;
 import com.Acrobot.ChestShop.Economy.Economy;
+import org.bukkit.scheduler.BukkitRunnable;
 
-public class History {
+public class History extends BukkitRunnable {
 
     private UUID userId;
+    private CommandSender sender;
     private Integer maxRows = 25;
 
     private ArrayList<UUID> historyUsers = new ArrayList<UUID>();
@@ -32,8 +34,10 @@ public class History {
     private int index = 0;
     private ChestShopNotifier plugin;
 
-    public History(ChestShopNotifier plugin) {
+    public History(ChestShopNotifier plugin, UUID userId, CommandSender sender) {
         this.plugin = plugin;
+        this.userId = userId;
+        this.sender = sender;
     }
 
     public void setUserId(UUID uid) {
@@ -43,21 +47,39 @@ public class History {
         this.maxRows = mr;
     }
 
-    public void gatherResults(MySQL m) throws SQLException {
-        Connection c = m.openConnection();
-        Statement statement = c.createStatement();
 
-        ResultSet res = statement.executeQuery("SELECT * FROM `csnUUID` WHERE `ShopOwnerId`='" + this.userId.toString() + "' AND `Unread`='0' ORDER BY `Id` DESC LIMIT 1000");
+    public void run() {
+        gatherResults();
+        showResults();
+    }
 
-        while(res.next()) {
-            index++;
+    private void gatherResults() {
+        Connection c = plugin.getConnection();
+        try {
+            Statement statement = c.createStatement();
 
-            historyUsers.add(UUID.fromString(res.getString("CustomerId")));
-            historyItems.add(res.getString("ItemId"));
-            historyAmounts.add(res.getDouble("Amount"));
-            historyTimes.add(res.getInt("Time"));
-            historyModes.add(res.getInt("Mode"));
-            historyQuantities.add(res.getInt("Quantity"));
+            ResultSet res = statement.executeQuery("SELECT * FROM `csnUUID` WHERE `ShopOwnerId`='" + this.userId.toString() + "' AND `Unread`='0' ORDER BY `Id` DESC LIMIT 1000");
+
+            while (res.next()) {
+                index++;
+
+                historyUsers.add(UUID.fromString(res.getString("CustomerId")));
+                historyItems.add(res.getString("ItemId"));
+                historyAmounts.add(res.getDouble("Amount"));
+                historyTimes.add(res.getInt("Time"));
+                historyModes.add(res.getInt("Mode"));
+                historyQuantities.add(res.getInt("Quantity"));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            if (c != null) {
+                try {
+                    c.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 
@@ -75,7 +97,7 @@ public class History {
         return -1;
     }
 
-    public void showResults(CommandSender sender) {
+    private void showResults() {
         if(plugin.getMessage("history-caption") != null) sender.sendMessage(plugin.getMessage("history-caption"));
         sender.sendMessage("");
 
@@ -157,5 +179,4 @@ public class History {
 
 
     }
-
 }

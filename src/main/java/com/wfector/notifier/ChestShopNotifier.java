@@ -1,19 +1,14 @@
 package com.wfector.notifier;
 
 import java.sql.Connection;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.UUID;
 import java.util.logging.Level;
 
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -35,76 +30,66 @@ import static com.Acrobot.Breeze.Utils.MaterialUtil.getSignName;
 public class ChestShopNotifier extends JavaPlugin implements Listener {
 
     public MySQL MySQL;
-    Connection c = null;
 
     private ArrayList<String> batch = new ArrayList<String>();
 
     private boolean verboseEnabled;
     private boolean joinNotificationEnabled;
-    private Integer joinNotificationDelay;
+    private int joinNotificationDelay;
 
     private Connection conn;
 
     public boolean pluginEnabled = false;
     public boolean logAdminShop = true;
 
-    ChestShopNotifier plugin = this;
-
     private Notifier notifier;
 
     public void onEnable() {
-        this.saveDefaultConfig();
-        updateConfiguration(true);
+        getCommand("csn").setExecutor(new CommandRunner(this));
 
-        this.getLogger().log(Level.INFO, "Connecting to the database...");
+        saveDefaultConfig();
+        updateConfiguration(null, false);
 
-        c = MySQL.openConnection();
+        getLogger().log(Level.INFO, "Connecting to the database...");
 
-        if(c == null) {
-            this.getLogger().log(Level.WARNING, "Failed to connect to the database! Disabling connections!");
+        new BukkitRunnable() {
+            public void run() {
+                Connection c = getConnection();
+                if (c == null) {
+                    getLogger().log(Level.WARNING, "Failed to connect to the database! Disabling connections!");
+                    return;
+                }
 
-            return;
-        }
+                try {
+                    Statement statement = c.createStatement();
 
-        pluginEnabled = true;
+                    statement.executeUpdate("CREATE TABLE IF NOT EXISTS csnUUID (Id int(11) AUTO_INCREMENT, ShopOwnerId VARCHAR(36), CustomerId VARCHAR(36), ItemId VARCHAR(1000), Mode INT(11), Amount FLOAT(53), Quantity INT(11), Time INT(11), Unread INT(11), PRIMARY KEY (Id))");
 
-        getLogger().log(Level.INFO, "Connected!");
-
-        try {
-            Statement statement = c.createStatement();
-
-            statement.executeUpdate("CREATE TABLE IF NOT EXISTS csnUUID (Id int(11) AUTO_INCREMENT, ShopOwnerId VARCHAR(36), CustomerId VARCHAR(36), ItemId VARCHAR(1000), Mode INT(11), Amount FLOAT(53), Quantity INT(11), Time INT(11), Unread INT(11), PRIMARY KEY (Id))");
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-
-            setEnabled(false);
-            return;
-        } finally {
-            try {
-                c.close();
-            } catch (SQLException e) {
-                e.printStackTrace();
+                    getLogger().log(Level.INFO, "Connected!");
+                    pluginEnabled = true;
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                } finally {
+                    try {
+                        c.close();
+                    } catch (SQLException e) {
+                        e.printStackTrace();
+                    }
+                }
             }
-        }
+        }.runTaskAsynchronously(this);
 
-        if(isPluginEnabled()) {
-            notifier = new Notifier(this);
-            notifier.runTaskTimer(this, 60, 60);
+        notifier = new Notifier(this);
+        notifier.runTaskTimer(this, 60, 60);
 
-            getServer().getPluginManager().registerEvents(this, this);
-        }
+        getServer().getPluginManager().registerEvents(this, this);
     }
 
     public void onDisable() {
-        if(batch.size() > 0) {
-            this.getLogger().log(Level.INFO, "Database queue is not empty. Uploading now...");
-            try {
-                runBatch();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-            this.getLogger().log(Level.INFO, "Done uploading database queue!");
+        if(batch.size() > 0 && getConnection() != null) {
+            getLogger().log(Level.INFO, "Database queue is not empty. Uploading now...");
+            new BatchRunner(this).run();
+            getLogger().log(Level.INFO, "Done uploading database queue!");
         }
 
     }
@@ -113,7 +98,7 @@ public class ChestShopNotifier extends JavaPlugin implements Listener {
         return isEnabled() && pluginEnabled;
     }
 
-    public boolean updateConfiguration(boolean isReload) {
+    public boolean updateConfiguration(final CommandSender sender, boolean isReload) {
         if(isReload) {
             reloadConfig();
         }
@@ -135,15 +120,23 @@ public class ChestShopNotifier extends JavaPlugin implements Listener {
 
             getLogger().log(Level.INFO, "Connecting to the database...");
 
-            c = MySQL.openConnection();
+            new BukkitRunnable() {
+                public void run() {
+                    Connection c = getConnection();
 
-            if(c == null) {
-                getLogger().log(Level.WARNING, "Failed to connect to the database! Disabling connections!");
+                    pluginEnabled = c != null;
+                    if(pluginEnabled) {
+                        getLogger().log(Level.WARNING, "Database connected!");
+                        sender.sendMessage(ChatColor.LIGHT_PURPLE + "ChestShop Notifier // " + ChatColor.GREEN + "Reloaded!");
+                        sender.sendMessage(ChatColor.LIGHT_PURPLE + "ChestShop Notifier // " + ChatColor.GREEN + "Database connected!");
 
-                pluginEnabled = false;
-                return false;
-            }
-            pluginEnabled = true;
+                    } else {
+                        getLogger().log(Level.WARNING, "Failed to connect to the database! Disabling connections!");
+                        sender.sendMessage(ChatColor.LIGHT_PURPLE + "ChestShop Notifier // " + ChatColor.GREEN + "Reloaded!");
+                        sender.sendMessage(ChatColor.LIGHT_PURPLE + "ChestShop Notifier // " + ChatColor.RED + "Database failed to connect!");
+                    }
+                }
+            }.runTaskAsynchronously(this);
         }
         return true;
     }
@@ -157,82 +150,23 @@ public class ChestShopNotifier extends JavaPlugin implements Listener {
         return (getConfig().contains("messages." + string)) ? ChatColor.translateAlternateColorCodes('&', getConfig().getString("messages." + string)) : null;
     }
 
-    @Override
-    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        if (cmd.getName().equalsIgnoreCase("csn")) {
-            CommandRunner c = new CommandRunner();
-            c.SetPlugin(this);
-            c.Process(sender, cmd, label, args);
-
-            return true;
-        }
-        return false;
-    }
-
-
     @EventHandler
     public void onPlayerJoinEvent(PlayerJoinEvent e) {
-        if(joinNotificationEnabled) {
+        if(!joinNotificationEnabled) {
             debug("Join notifications are " + joinNotificationEnabled + ", skipping...");
             return;
         }
 
         debug("User joined. Checking for updates...");
 
-        final Player p = e.getPlayer();
-        final UUID pId = p.getUniqueId();
-
         if(!isPluginEnabled()) {
             debug("Cannot notify user. Plugin is disabled.");
             return;
         }
 
-        new BukkitRunnable() {
+        final Player p = e.getPlayer();
 
-            @Override
-            public void run() {
-                Connection batchConnection;
-                if (!connect()) return;
-                batchConnection = plugin.getConnection();
-
-                Statement statement;
-                ResultSet res;
-                try {
-                    statement = batchConnection.createStatement();
-
-                    res = statement.executeQuery("SELECT `ShopOwnerId` FROM csnUUID WHERE `ShopOwnerId`='" + pId.toString() + "' AND `Unread`='0'");
-
-                    res.next();
-
-                    int amount = 0;
-                    if (res.getMetaData().getColumnCount() > 0)
-                        while (res.next())
-                            amount++;
-
-                    debug("Found rows: " + String.valueOf(amount));
-
-                    if (amount > 0 && p.isOnline()) {
-                        Date dt = new Date();
-                        debug("Added message to queue (delay s: " + joinNotificationDelay + ")");
-                        int sendTime = (int) (dt.getTime() / 1000) + joinNotificationDelay;
-
-                        plugin.getNotifier().add(pId, amount, sendTime);
-                    }
-
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                } finally {
-                    try {
-                        batchConnection.close();
-                    } catch (SQLException e1) {
-                        e1.printStackTrace();
-                    }
-                }
-            }
-
-        }.runTaskAsynchronously(this);
-
-        debug("Done.");
+        new LoginRunner(this, p).runTaskAsynchronously(this);
     }
 
     @EventHandler
@@ -249,93 +183,55 @@ public class ChestShopNotifier extends JavaPlugin implements Listener {
         UUID clientId = e.getClient().getUniqueId();
 
         StringBuilder items = new StringBuilder(50);
-        Integer itemQuantitys = 0;
+        int itemQuantities = 0;
 
         for (ItemStack item : e.getStock()) {
             items.append(getSignName(item));
-            itemQuantitys = item.getAmount();
+            itemQuantities = item.getAmount();
         }
 
         String itemId = items.toString();
-        Integer itemQuant = itemQuantitys;
 
-        batch.add("('" + ownerId.toString() + "', '" + clientId.toString() + "', '" + itemId + "', '" + mode.toString() + "', '" + String.valueOf(price) + "', '" + Time.GetEpochTime() + "', '" + itemQuant.toString() + "', '0')");
+        batch.add("('" + ownerId.toString() + "', '" + clientId.toString() + "', '" + itemId + "', '" + mode.toString() + "', '" + String.valueOf(price) + "', '" + Time.GetEpochTime() + "', '" + String.valueOf(itemQuantities) + "', '0')");
 
         debug("Item added to batch.");
-        Bukkit.getScheduler().runTask(this, new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    runBatch();
-                } catch (SQLException e1) {
-                    // TODO Auto-generated catch block
-                    e1.printStackTrace();
-                }
-            }
-        });
+        new BatchRunner(this).runTaskAsynchronously(this);
 
         return true;
     }
 
     public boolean connect() {
         try {
-            this.conn = MySQL.openConnection();
+            if (conn == null || conn.isClosed()) {
+                conn = MySQL.openConnection();
+            }
         } catch (Exception e) {
-            this.getLogger().warning("Could not establish database connection!");
+            this.getLogger().log(Level.SEVERE, "Could not establish database connection!", e);
             return false;
         }
         return true;
     }
 
-
-    public void runBatch() throws SQLException {
-
-        debug("Uploading a batch...");
-
-        if(batch.isEmpty()) return;
-        if(!pluginEnabled) return;
-        if(!connect()) return;
-
-        if(batch.size() > 0) {
-
-            Connection batchConnection = this.conn;
-
-            String qstr = "INSERT INTO csnUUID (`ShopOwnerId`, `CustomerId`, `ItemId`, `Mode`, `Amount`, `Time`, `Quantity`, `Unread`) VALUES ";
-
-            int i = 0;
-
-            for(String query : batch) {
-                qstr += query;
-                if(batch.size() > (i+1)) {
-                    qstr += ", ";
-                }
-                i++;
-            }
-
-            Statement statement = batchConnection.createStatement();
-            statement.executeUpdate(qstr);
-            debug("Update: " + qstr);
-
-            batch.clear();
-
-            batchConnection.close();
-        }
-
-        debug("Batch completed.");
-    }
-
     public void debug(String d) {
         if(verboseEnabled)
-            this.getLogger().log(Level.INFO, d);
+            getLogger().log(Level.INFO, d);
     }
 
     public Connection getConnection() {
-        if(!this.connect()) return null;
-        return this.conn;
+        if(!connect()) return null;
+        return conn;
 
     }
 
     public Notifier getNotifier() {
         return notifier;
+    }
+
+    public ArrayList<String> getBatch() {
+        return batch;
+    }
+
+    public int getJoinNotificationDelay() {
+        return joinNotificationDelay;
     }
 }
