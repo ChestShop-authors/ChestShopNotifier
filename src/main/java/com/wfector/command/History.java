@@ -10,8 +10,6 @@ import java.util.UUID;
 
 import org.bukkit.command.CommandSender;
 
-import code.husky.mysql.MySQL;
-
 import com.wfector.notifier.ChestShopNotifier;
 import com.wfector.util.ItemConverter;
 import com.wfector.util.Time;
