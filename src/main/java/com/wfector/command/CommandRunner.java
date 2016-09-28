@@ -3,6 +3,8 @@ package com.wfector.command;
 import java.util.UUID;
 import java.util.logging.Level;
 
+import com.Acrobot.ChestShop.Configuration.Properties;
+import com.Acrobot.ChestShop.UUIDs.NameManager;
 import com.wfector.notifier.BatchRunner;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
@@ -54,24 +56,26 @@ public class CommandRunner implements CommandExecutor {
             } else if(args[0].equalsIgnoreCase("help") && sender.hasPermission("csn.user")) {
                 Help.SendDialog(sender);
 
-            } else  if(args[0].equalsIgnoreCase("history") && sender.hasPermission("csn.user")) {
-                OfflinePlayer target;
+            } else if(args[0].equalsIgnoreCase("history") && sender.hasPermission("csn.user")) {
 
                 if(!plugin.isPluginEnabled()) {
                     sender.sendMessage(ChatColor.RED + "Invalid database connection. Please edit config and /csn reload.");
                     return true;
                 }
 
+
+                UUID userId;
                 if(args.length > 1) {
                     if(args.length > 2) {
                         sender.sendMessage(ChatColor.RED + "Too many arguments! /csn history [username]");
                         return true;
                     }
 
+                    OfflinePlayer target;
                     if(sender.hasPermission("csn.history.others") || sender.hasPermission("csn.admin")) {
                         target = plugin.getServer().getPlayer(args[1]);
                         if (target == null) {
-                            plugin.getServer().getOfflinePlayer(args[1]);
+                            target = plugin.getServer().getOfflinePlayer(args[1]);
                         }
                     } else {
                         sender.sendMessage(ChatColor.RED + "You don't have the permission to see other user's history! You can only use /csn history!");
@@ -82,15 +86,10 @@ public class CommandRunner implements CommandExecutor {
                         sender.sendMessage(ChatColor.RED + "The user '" + args[1] + "' was not found.");
                         return true;
                     }
+                    userId = target.getUniqueId();
                 } else {
-                    if(!(sender instanceof Player)) {
-                        sender.sendMessage(ChatColor.RED + "The console has no sales!");
-                        return true;
-                    }
-                    target = (Player) sender;
+                    userId = (sender instanceof Player) ? ((Player) sender).getUniqueId() : NameManager.getUUID(Properties.ADMIN_SHOP_NAME);
                 }
-
-                final UUID userId = target.getUniqueId();
 
                 new History(plugin, userId, sender).runTaskAsynchronously(plugin);
 
@@ -102,7 +101,7 @@ public class CommandRunner implements CommandExecutor {
                     return true;
                 }
 
-                UUID senderId = (sender instanceof Player) ? ((Player) sender).getUniqueId() : UUID.fromString("00000000-0000-0000-0000-000000000000");
+                UUID senderId = (sender instanceof Player) ? ((Player) sender).getUniqueId() : NameManager.getUUID(Properties.ADMIN_SHOP_NAME);
 
                 new Clear(plugin, senderId).runTaskAsynchronously(plugin);
                 if(plugin.getMessage("history-clear") != null) sender.sendMessage(plugin.getMessage("history-clear"));
