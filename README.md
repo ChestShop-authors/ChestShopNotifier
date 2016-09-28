@@ -2,6 +2,12 @@
 
 CSN (ChestShop Notifier) is a plugin that records ChestShop transactions to a MySQL database. When a shop owner logs onto the server, they will be presented with an option to view sales from when they were offline. 
 
+##Downloads
+
+You can download release versions of the plugin from the [ChestShopNotifier Bukkit dev page](dev.bukkit.org/bukkit-plugins/csn/)!
+
+Development builds can be found on the [Minebench.de](https://www.minebench.de/) Jenkins build server: http://ci.minebench.de/job/ChestShopNotifier/
+
 ##Installation Instructions
 
 Installing this plugin is simple. Just download and drag ChestShopNotifier.jar into your server's *plugins* directory. 
