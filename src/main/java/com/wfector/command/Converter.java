@@ -40,8 +40,9 @@ public class Converter extends BukkitRunnable {
     }
 
     private boolean convertDatabase() {
-        Connection conn = plugin.getConnection();
+        Connection conn = null;
         try {
+            conn = plugin.getConnection();
             Statement sta = conn.createStatement();
             ResultSet res = sta.executeQuery("SELECT * FROM `csn` WHERE `Unread`='0' ORDER BY `Id` ASC");
 
@@ -66,27 +67,15 @@ public class Converter extends BukkitRunnable {
                     prepsta.setString(8, String.valueOf(res.getInt("Unread")));
 
                     prepsta.execute();
-
-                    prepsta.close();
-
                 }
             }
-
-            conn = plugin.getConnection();
             conn.createStatement().executeUpdate("ALTER TABLE `csn` RENAME TO `csnOLD`");
 
         } catch (SQLException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
             return false;
         } finally {
-            if (conn != null) {
-                try {
-                    conn.close();
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-            }
+            ChestShopNotifier.close(conn);
         }
         uuidmap.clear();
         return true;

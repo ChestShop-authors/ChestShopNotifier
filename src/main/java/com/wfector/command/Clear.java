@@ -19,21 +19,15 @@ public class Clear extends BukkitRunnable {
     }
 
     public void run() {
-        Connection c = plugin.getConnection();
-
+        Connection c = null;
         try {
+            c = plugin.getConnection();
             Statement statement = c.createStatement();
             statement.executeUpdate("UPDATE csnUUID SET `Unread`='1' WHERE `ShopOwnerId`='" + userId.toString() + "'");
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {
-            if (c != null) {
-                try {
-                    c.close();
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-            }
+            ChestShopNotifier.close(c);
         }
 
     }

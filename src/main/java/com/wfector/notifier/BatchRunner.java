@@ -23,13 +23,9 @@ public class BatchRunner extends BukkitRunnable {
 
         if(plugin.getBatch().size() > 0) {
 
-            Connection conn = plugin.getConnection();
-            if (conn == null) {
-                plugin.getLogger().log(Level.WARNING, "Invalid database connection!");
-                return;
-            }
-
+            Connection conn = null;
             try {
+                conn = plugin.getConnection();
                 String qstr = "INSERT INTO csnUUID (`ShopOwnerId`, `CustomerId`, `ItemId`, `Mode`, `Amount`, `Time`, `Quantity`, `Unread`) VALUES ";
 
                 int i = 0;
@@ -50,11 +46,7 @@ public class BatchRunner extends BukkitRunnable {
             } catch (SQLException e) {
                 e.printStackTrace();
             } finally {
-                try {
-                    conn.close();
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
+                ChestShopNotifier.close(conn);
             }
         }
 

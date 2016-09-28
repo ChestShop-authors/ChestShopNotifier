@@ -21,19 +21,12 @@ public class LoginRunner extends BukkitRunnable {
 
     @Override
     public void run() {
-
-        Connection conn = plugin.getConnection();
-        if (conn == null) {
-            plugin.getLogger().log(Level.WARNING, "Invalid database connection!");
-            return;
-        }
-
-        Statement statement;
-        ResultSet res;
+        Connection conn = null;
         try {
-            statement = conn.createStatement();
+            conn = plugin.getConnection();
+            Statement statement = conn.createStatement();
 
-            res = statement.executeQuery("SELECT `ShopOwnerId` FROM csnUUID WHERE `ShopOwnerId`='" + player.getUniqueId().toString() + "' AND `Unread`='0'");
+            ResultSet res = statement.executeQuery("SELECT `ShopOwnerId` FROM csnUUID WHERE `ShopOwnerId`='" + player.getUniqueId().toString() + "' AND `Unread`='0'");
 
             res.next();
 
@@ -55,11 +48,7 @@ public class LoginRunner extends BukkitRunnable {
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {
-            try {
-                conn.close();
-            } catch (SQLException e1) {
-                e1.printStackTrace();
-            }
+            ChestShopNotifier.close(conn);
         }
         plugin.debug("Done.");
     }

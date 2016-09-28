@@ -27,7 +27,7 @@ public class CommandRunner implements CommandExecutor {
             if(args[0].equalsIgnoreCase("reload") && (sender.hasPermission("csn.admin"))) {
                 sender.sendMessage(ChatColor.LIGHT_PURPLE + "ChestShop Notifier // " + ChatColor.GRAY + "Reloading, please wait...");
 
-                plugin.updateConfiguration(sender, true);
+                plugin.updateConfiguration(sender);
 
             } else if(args[0].equalsIgnoreCase("convert") && sender.hasPermission("csn.admin")) {
 
