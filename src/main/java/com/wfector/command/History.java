@@ -65,10 +65,13 @@ public class History extends BukkitRunnable {
 
             res.close();
 
-            Statement readStatement = c.createStatement();
-            int rowsUpdated = readStatement.executeUpdate("UPDATE csnUUID SET `Unread`='1' WHERE `ShopOwnerId`='" + userId.toString() + "'");
+            if (markRead) {
+                Statement readStatement = c.createStatement();
+                int rowsUpdated = readStatement.executeUpdate("UPDATE csnUUID SET `Unread`='1' WHERE `ShopOwnerId`='" + userId.toString() + "'");
 
-            if(rowsUpdated > 0 && plugin.getMessage("history-marked-read") != null) sender.sendMessage(plugin.getMessage("history-marked-read"));
+                if (rowsUpdated > 0 && plugin.getMessage("history-marked-read") != null)
+                    sender.sendMessage(plugin.getMessage("history-marked-read"));
+            }
 
         } catch (SQLException e) {
             e.printStackTrace();
