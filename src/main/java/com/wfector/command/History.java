@@ -65,7 +65,6 @@ public class History extends BukkitRunnable {
 
             res.close();
 
-            c = plugin.getConnection();
             Statement readStatement = c.createStatement();
             int rowsUpdated = readStatement.executeUpdate("UPDATE csnUUID SET `Unread`='1' WHERE `ShopOwnerId`='" + userId.toString() + "'");
 
