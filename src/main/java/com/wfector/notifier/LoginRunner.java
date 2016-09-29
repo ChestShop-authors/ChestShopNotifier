@@ -52,8 +52,6 @@ public class LoginRunner extends BukkitRunnable {
                 if(plugin.getMessage("history-cmd") != null) {
                     p.sendMessage(plugin.getMessage("history-cmd"));
                 }
-            } else {
-                plugin.debug("Warning: The player with the uuid '" + playerId + "' could not be found, yet was in queue.");
             }
         } catch (SQLException e) {
             e.printStackTrace();
