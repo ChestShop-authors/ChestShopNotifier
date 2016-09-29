@@ -5,44 +5,35 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 
+import com.Acrobot.ChestShop.Events.TransactionEvent.TransactionType;
+import com.Acrobot.ChestShop.UUIDs.NameManager;
+import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 
 import com.wfector.notifier.ChestShopNotifier;
-import com.wfector.util.ItemConverter;
 import com.wfector.util.Time;
 import com.Acrobot.ChestShop.Economy.Economy;
 import org.bukkit.scheduler.BukkitRunnable;
 
 public class History extends BukkitRunnable {
 
-    private UUID userId;
-    private CommandSender sender;
-    private Integer maxRows = 25;
+    private final UUID userId;
+    private final CommandSender sender;
+    private final boolean markRead;
+    private int maxRows = 25;
 
-    private ArrayList<UUID> historyUsers = new ArrayList<UUID>();
-    private ArrayList<String> historyItems = new ArrayList<String>();
-    private ArrayList<Double> historyAmounts = new ArrayList<Double>();
-    private ArrayList<Integer> historyTimes = new ArrayList<Integer>();
-    private ArrayList<Integer> historyModes = new ArrayList<Integer>();
-    private ArrayList<Integer> historyQuantities = new ArrayList<Integer>();
+    private final List<HistoryEntry> historyEntries = new ArrayList<>();
 
-    private int index = 0;
     private ChestShopNotifier plugin;
 
-    public History(ChestShopNotifier plugin, UUID userId, CommandSender sender) {
+    public History(ChestShopNotifier plugin, UUID userId, CommandSender sender, boolean markRead) {
         this.plugin = plugin;
         this.userId = userId;
         this.sender = sender;
-    }
-
-    public void setUserId(UUID uid) {
-        this.userId = uid;
-    }
-    public void setMaxRows(Integer mr) {
-        this.maxRows = mr;
+        this.markRead = markRead;
     }
 
 
@@ -57,18 +48,29 @@ public class History extends BukkitRunnable {
             c = plugin.getConnection();
             Statement statement = c.createStatement();
 
-            ResultSet res = statement.executeQuery("SELECT * FROM `csnUUID` WHERE `ShopOwnerId`='" + this.userId.toString() + "' AND `Unread`='0' ORDER BY `Id` DESC LIMIT 1000");
+            ResultSet res = statement.executeQuery("SELECT * FROM `csnUUID` WHERE `ShopOwnerId`='" + userId.toString() + "' ORDER BY `Id` DESC LIMIT 1000;");
 
             while (res.next()) {
-                index++;
-
-                historyUsers.add(UUID.fromString(res.getString("CustomerId")));
-                historyItems.add(res.getString("ItemId"));
-                historyAmounts.add(res.getDouble("Amount"));
-                historyTimes.add(res.getInt("Time"));
-                historyModes.add(res.getInt("Mode"));
-                historyQuantities.add(res.getInt("Quantity"));
+                HistoryEntry entry = new HistoryEntry(
+                        UUID.fromString(res.getString("CustomerId")),
+                        res.getString("ItemId"),
+                        res.getDouble("Amount"),
+                        res.getInt("Time"),
+                        res.getInt("Mode") == 1 ? TransactionType.BUY : TransactionType.SELL,
+                        res.getInt("Quantity"),
+                        res.getInt("Unread") == 0
+                );
+                addEntry(entry);
             }
+
+            res.close();
+
+            c = plugin.getConnection();
+            Statement readStatement = c.createStatement();
+            int rowsUpdated = readStatement.executeUpdate("UPDATE csnUUID SET `Unread`='1' WHERE `ShopOwnerId`='" + userId.toString() + "'");
+
+            if(rowsUpdated > 0 && plugin.getMessage("history-marked-read") != null) sender.sendMessage(plugin.getMessage("history-marked-read"));
+
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {
@@ -76,91 +78,43 @@ public class History extends BukkitRunnable {
         }
     }
 
-    public Integer HasData(ArrayList<String[]> data, String[] search) {
-
-        int i = 0;
-
-        for(String[] arr : data) {
-            boolean match = arr[0].equals(search[0]) && arr[1].equals(search[1]) && arr[2].equals(search[2]) && arr[4].equals(search[4]);
-            if(match)
-                return i;
-            i++;
+    public void addEntry(HistoryEntry addEntry) {
+        for (HistoryEntry entry : historyEntries) {
+            if (addEntry.isSimilar(entry)) {
+                entry.mergeWith(addEntry);
+                return;
+            }
         }
 
-        return -1;
+        historyEntries.add(addEntry);
     }
 
     private void showResults() {
         if(plugin.getMessage("history-caption") != null) sender.sendMessage(plugin.getMessage("history-caption"));
         sender.sendMessage("");
 
-        index = 0;
-        int lines = 0;
-
-        if(historyUsers.isEmpty()) {
+        if(historyEntries.isEmpty()) {
             if(plugin.getMessage("history-empty") != null) sender.sendMessage(plugin.getMessage("history-empty"));
 
             return;
         }
 
-        ArrayList<String[]> data = new ArrayList<String[]>();
-        ArrayList<Integer> times = new ArrayList<Integer>();
+        for(int i = historyEntries.size(); i > 0 && i > historyEntries.size() - maxRows; i++) {
+            HistoryEntry entry = historyEntries.get(i);
+            String msgString = entry.getType() == TransactionType.BUY ? plugin.getMessage("history-bought") : plugin.getMessage("history-sold");
 
-        for(UUID userId : historyUsers) {
-            Double amount = historyAmounts.get(index);
-            String itemName = historyItems.get(index);
-            Integer time = historyTimes.get(index);
-            Integer mode = historyModes.get(index);
-            Integer quantity = historyQuantities.get(index);
-
-            itemName = ItemConverter.GetItemName(itemName);
-
-            String[] arr = {
-                    userId.toString(),
-                    amount.toString(),
-                    itemName,
-                    time.toString(),
-                    mode.toString(),
-                    quantity.toString()
-            };
-
-            if(lines < this.maxRows) {
-                Integer hasData = HasData(data, arr);
-                if(hasData > -1) {
-                    times.set(hasData, times.get(hasData) + 1);
-                }
-                else {
-                    data.add(arr);
-                    times.add(1);
-                    lines++;
-                }
-
-                index++;
-            }
-        }
-
-        Collections.reverse(data);
-        Collections.reverse(times);
-
-        int i = 0;
-
-        for(String[] arr : data) {
-            Integer Multiplier = times.get(i);
-
-            String msgString = (Integer.parseInt(arr[4]) == 1) ? plugin.getMessage("history-bought") : plugin.getMessage("history-sold");
-
-            Integer totalItems = Integer.parseInt(arr[5]);
-            totalItems = totalItems * (Multiplier);
-
-            Double money = Double.parseDouble(arr[1]) * Multiplier;
-
-            String playerName = plugin.getServer().getOfflinePlayer(UUID.fromString(arr[0])).getName();
+            String playerName = NameManager.getUsername(entry.getCustomerId());
 
             msgString = msgString.replace("{player}", playerName != null ? playerName : "unknown");
-            msgString = msgString.replace("{count}", totalItems.toString());
-            msgString = msgString.replace("{item}", arr[2].replace(" ", ""));
-            msgString = msgString.replace("{timeago}", Time.GetAgo(Integer.parseInt(arr[3])));
-            msgString = msgString.replace("{money}", Economy.formatBalance(money));
+            msgString = msgString.replace("{count}", String.valueOf(entry.getQuantity()));
+            msgString = msgString.replace("{item}", entry.getItemId().replace(" ", ""));
+            msgString = msgString.replace("{timeago}", Time.getAgo(entry.getTime()));
+            msgString = msgString.replace("{money}", Economy.formatBalance(entry.getPrice() * entry.getQuantity()));
+
+            if (!entry.isUnread()) {
+                // Make read messages gray
+                msgString = ChatColor.GRAY + ChatColor.stripColor(msgString);
+            }
 
             sender.sendMessage(msgString);
 
@@ -168,8 +122,92 @@ public class History extends BukkitRunnable {
         }
 
         sender.sendMessage(" ");
-        sender.sendMessage(plugin.getMessage("history-read"));
+        if (sender.hasPermission("csn.command.clear")) {
+            sender.sendMessage(plugin.getMessage("history-footer-clear"));
+        }
 
+    }
 
+    private class HistoryEntry {
+        private final UUID customerId;
+        private final String itemId;
+        private double price;
+        private int time;
+        private final TransactionType type;
+        private int quantity;
+        private final boolean unread;
+
+        public HistoryEntry(UUID customerId, String itemId, double amount, int time, TransactionType type, int quantity, boolean unread) {
+            this.customerId = customerId;
+            this.itemId = itemId;
+            this.price = amount / quantity;
+            this.time = time;
+            this.type = type;
+            this.quantity = quantity;
+            this.unread = unread;
+        }
+
+        public UUID getCustomerId() {
+            return customerId;
+        }
+
+        public String getItemId() {
+            return itemId;
+        }
+
+        public double getPrice() {
+            return price;
+        }
+
+        public int getTime() {
+            return time;
+        }
+
+        public TransactionType getType() {
+            return type;
+        }
+
+        public int getQuantity() {
+            return quantity;
+        }
+
+        public boolean isUnread() {
+            return unread;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o instanceof HistoryEntry) {
+                HistoryEntry entry = (HistoryEntry) o;
+                return this.getCustomerId().equals(entry.getCustomerId())
+                        && this.getItemId().equals(entry.getItemId())
+                        && this.getPrice() == entry.getPrice()
+                        && this.getTime() == entry.getTime()
+                        && this.getType() == entry.getType()
+                        && this.getQuantity() == entry.getQuantity()
+                        && this.isUnread() == entry.isUnread();
+            }
+            return false;
+        }
+
+        public boolean isSimilar(HistoryEntry entry) {
+            return equals(entry)
+                    || this.getCustomerId().equals(entry.getCustomerId())
+                    && this.getType() == entry.getType()
+                    && this.getPrice() == entry.getPrice()
+                    && this.getItemId().equals(entry.getItemId())
+                    && this.getTime() < entry.getTime() + 5 * 60 // Check if they are a maximum of 5 minutes apart
+                    && this.getTime() > entry.getTime() - 5 * 60;
+        }
+
+        public void mergeWith(HistoryEntry entry) {
+            quantity += entry.getQuantity();
+            if (time < entry.getTime()) {
+                time = entry.getTime();
+            }
+        }
     }
 }

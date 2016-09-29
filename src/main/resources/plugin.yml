@@ -8,8 +8,8 @@ depend: [ChestShop]
 commands:
    csn:
       description: Main ChestShopNotifier command.
-      usage: /csn help|history|clear
-      permission: csn.user
+      usage: /csn help|history|read|clear
+      permission: csn.command
       permission-message: No permission
 permissions:
     csn.*:
@@ -17,13 +17,45 @@ permissions:
         children:
             csn.user: true
             csn.admin: true
-            csn.history.others: true
     csn.user:
         description: Basic commands for any user
-        default: true
+        children:
+            csn.command: true
+            csn.comamnd.history: true
+            csn.command.clear: true
     csn.admin:
         description: Access to high-end commands
+        children:
+            csn.command.reload: true
+            csn.command.upload: true
+            csn.command.convert: true
+            csn.command.cleandatabase: true
+            csn.command.history.others: true
+    csn.command:
+        description: Allow access to the plugin command
+        default: true
+    csn.command.history:
+        description: Allow history lookup
+        default: true
+    csn.command.clear:
+        description: Allows to clear entries from the database
+        default: true
+    csn.command.reload:
+        description: Allows reloading the plugin
+        default: op
+    csn.command.upload:
+        description: Allows uploading the current batch
+        default: op
+    csn.command.convert:
+        description: Allows converting of old entries
+        default: op
+    csn.command.cleandatabase:
+        description: Allows cleaning of the database
+        default: op
+    csn.command.history.others:
+        description: Allow lookups on other users
         default: op
     csn.history.others:
         description: Allow lookups on other users
-        default: op
+        children:
+            csn.command.history.others: true

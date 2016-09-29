@@ -26,10 +26,11 @@ public class CommandRunner implements CommandExecutor {
         if(args.length == 0) {
             Help.SendDialog(sender);
         } else {
-            if(args[0].equalsIgnoreCase("reload") && (sender.hasPermission("csn.admin"))) {
+            if(args[0].equalsIgnoreCase("reload") && (sender.hasPermission("csn.command.reload"))) {
                 sender.sendMessage(ChatColor.LIGHT_PURPLE + "ChestShop Notifier // " + ChatColor.GRAY + "Reloading, please wait...");
 
                 plugin.updateConfiguration(sender);
+                return true;
 
             } else if(args[0].equalsIgnoreCase("convert") && sender.hasPermission("csn.admin")) {
 
@@ -42,8 +43,9 @@ public class CommandRunner implements CommandExecutor {
                 plugin.getLogger().log(Level.INFO, "Attempting to convert database...");
 
                 new Converter(plugin, sender).runTaskAsynchronously(plugin);
+                return true;
 
-            } else if(args[0].equalsIgnoreCase("upload") && sender.hasPermission("csn.admin")) {
+            } else if(args[0].equalsIgnoreCase("upload") && sender.hasPermission("csn.command.upload")) {
                 if(!plugin.isPluginEnabled()) {
                     sender.sendMessage(ChatColor.RED + "Invalid database connection. Please edit config and /csn reload.");
                     return true;
@@ -53,10 +55,66 @@ public class CommandRunner implements CommandExecutor {
 
                 sender.sendMessage(ChatColor.RED + "Batch executed!");
 
-            } else if(args[0].equalsIgnoreCase("help") && sender.hasPermission("csn.user")) {
-                Help.SendDialog(sender);
+            } else if(args[0].equalsIgnoreCase("cleandatabase") && sender.hasPermission("csn.command.cleandatabase")) {
+                if(!plugin.isPluginEnabled()) {
+                    sender.sendMessage(ChatColor.RED + "Invalid database connection. Please edit config and /csn reload.");
+                    return true;
+                }
 
-            } else if(args[0].equalsIgnoreCase("history") && sender.hasPermission("csn.user")) {
+                CleanDatabase cleaner = new CleanDatabase(plugin, sender);
+
+                if (args.length > 1) {
+                    for (int i = 1; i < args.length; i++) {
+                        CleanDatabase.Parameter param = CleanDatabase.Parameter.getFromInput(args[i]);
+                        if (param != null) {
+                            if (i + 1 + param.getArgs().length > args.length) {
+                                sender.sendMessage(ChatColor.RED + "Missing parameter arguments: " + param.getUsage());
+                                return true;
+                            }
+                            switch (param) {
+                                case OLDER_THAN:
+                                    try {
+                                        int days = Integer.parseInt(args[i + 1]);
+                                        cleaner.cleanBefore(days);
+                                    } catch (NumberFormatException e) {
+                                        sender.sendMessage(ChatColor.RED + args[i + 1] + " is not a valid number input for " + param.getUsage() + "!");
+                                        return true;
+                                    }
+                                    break;
+                                case USER:
+                                    UUID userId;
+                                    try {
+                                        userId = UUID.fromString(args[i+1]);
+                                    } catch (IllegalArgumentException e) {
+                                        userId = NameManager.getUUID(args[i+1]);
+                                    }
+                                    if (userId != null) {
+                                        cleaner.cleanUser(userId);
+                                    } else {
+                                        sender.sendMessage(ChatColor.RED + args[i + 1] + " is not a valid username/uuid input for " + param.getUsage() + "!");
+                                    }
+                                    break;
+                                case READ_ONLY:
+                                    cleaner.cleanReadOnly(true);
+                                    break;
+                                case ALL:
+                                    cleaner.cleanReadOnly(false);
+                                    break;
+                            }
+                            i += param.getArgs().length;
+                        }
+                    }
+                }
+
+                cleaner.runTaskAsynchronously(plugin);
+
+                return true;
+
+            } else if(args[0].equalsIgnoreCase("help") && sender.hasPermission("csn.command")) {
+                Help.SendDialog(sender);
+                return true;
+
+            } else if(args[0].equalsIgnoreCase("history") && sender.hasPermission("csn.command.history")) {
 
                 if(!plugin.isPluginEnabled()) {
                     sender.sendMessage(ChatColor.RED + "Invalid database connection. Please edit config and /csn reload.");
@@ -64,6 +122,7 @@ public class CommandRunner implements CommandExecutor {
                 }
 
 
+                boolean markRead;
                 UUID userId;
                 if(args.length > 1) {
                     if(args.length > 2) {
@@ -72,7 +131,7 @@ public class CommandRunner implements CommandExecutor {
                     }
 
                     OfflinePlayer target;
-                    if(sender.hasPermission("csn.history.others") || sender.hasPermission("csn.admin")) {
+                    if(sender.hasPermission("csn.command.history.others")) {
                         target = plugin.getServer().getPlayer(args[1]);
                         if (target == null) {
                             target = plugin.getServer().getOfflinePlayer(args[1]);
@@ -87,24 +146,23 @@ public class CommandRunner implements CommandExecutor {
                         return true;
                     }
                     userId = target.getUniqueId();
+                    markRead = false;
                 } else {
                     userId = (sender instanceof Player) ? ((Player) sender).getUniqueId() : NameManager.getUUID(Properties.ADMIN_SHOP_NAME);
+                    markRead = true;
                 }
 
-                new History(plugin, userId, sender).runTaskAsynchronously(plugin);
+                new History(plugin, userId, sender, markRead).runTaskAsynchronously(plugin);
 
                 return true;
 
-            } else if(args[0].equalsIgnoreCase("clear") && sender.hasPermission("csn.user")) {
+            } else if(args[0].equalsIgnoreCase("clear") && sender.hasPermission("csn.command.clear")) {
                 if(!plugin.isPluginEnabled()) {
                     sender.sendMessage(ChatColor.RED + "Invalid database connection. Please edit config and /csn reload.");
                     return true;
                 }
 
-                UUID senderId = (sender instanceof Player) ? ((Player) sender).getUniqueId() : NameManager.getUUID(Properties.ADMIN_SHOP_NAME);
-
-                new Clear(plugin, senderId).runTaskAsynchronously(plugin);
-                if(plugin.getMessage("history-clear") != null) sender.sendMessage(plugin.getMessage("history-clear"));
+                new Clear(plugin, sender).runTaskAsynchronously(plugin);
 
                 return true;
             }
