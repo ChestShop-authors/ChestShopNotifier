@@ -1,9 +1,8 @@
 package com.wfector.notifier;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.logging.Level;
 
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -26,20 +25,24 @@ public class BatchRunner extends BukkitRunnable {
             Connection conn = null;
             try {
                 conn = plugin.getConnection();
-                String qstr = "INSERT INTO csnUUID (`ShopOwnerId`, `CustomerId`, `ItemId`, `Mode`, `Amount`, `Time`, `Quantity`, `Unread`) VALUES ";
+                conn.setAutoCommit(false);
+                String qstr = "INSERT INTO csnUUID (`ShopOwnerId`, `CustomerId`, `ItemId`, `Mode`, `Amount`, `Time`, `Quantity`, `Unread`) VALUES (?,?,?,?,?,?,?,?)";
 
-                int i = 0;
+                PreparedStatement statement = conn.prepareStatement(qstr);
 
-                for(String query : plugin.getBatch()) {
-                    qstr += query;
-                    if(plugin.getBatch().size() > (i+1)) {
-                        qstr += ", ";
+                for(int i = 0; i < plugin.getBatch().size(); i++) {
+                    Object[] values = plugin.getBatch().get(i);
+
+                    for (int j = 0; j < 8; j++) {
+                        statement.setObject(j + 1, values[j]);
                     }
-                    i++;
+                    statement.addBatch();
+                    if (i % 1000 == 0 || i + 1 == plugin.getBatch().size()) {
+                        statement.executeBatch(); // Execute every 1000 items.
+                        conn.commit();
+                    }
                 }
 
-                Statement statement = conn.createStatement();
-                statement.executeUpdate(qstr);
                 plugin.debug("Update: " + qstr);
 
                 plugin.getBatch().clear();

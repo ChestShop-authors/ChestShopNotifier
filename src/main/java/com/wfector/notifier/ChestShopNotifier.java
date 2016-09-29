@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import java.util.logging.Level;
 
@@ -31,7 +32,7 @@ public class ChestShopNotifier extends JavaPlugin implements Listener {
 
     private HikariDataSource ds;
 
-    private ArrayList<String> batch = new ArrayList<String>();
+    private List<Object[]> batch = new ArrayList<>();
 
     private boolean verboseEnabled;
     private boolean joinNotificationEnabled;
@@ -177,7 +178,16 @@ public class ChestShopNotifier extends JavaPlugin implements Listener {
 
         String itemId = items.toString();
 
-        batch.add("('" + ownerId.toString() + "', '" + clientId.toString() + "', '" + itemId + "', '" + mode.toString() + "', '" + String.valueOf(price) + "', '" + Time.GetEpochTime() + "', '" + String.valueOf(itemQuantities) + "', '0')");
+        batch.add(new Object[] {
+                ownerId.toString(),
+                clientId.toString(),
+                itemId,
+                mode,
+                price,
+                Time.getEpochTime(),
+                itemQuantities,
+                0
+        });
 
         debug("Item added to batch.");
         new BatchRunner(this).runTaskAsynchronously(this);
@@ -195,7 +205,7 @@ public class ChestShopNotifier extends JavaPlugin implements Listener {
 
     }
 
-    public ArrayList<String> getBatch() {
+    public List<Object[]> getBatch() {
         return batch;
     }
 }
