@@ -4,43 +4,39 @@ import java.util.Date;
 
 public class Time {
 
-    public static long GetEpochTime() {
-        Date dt = new Date();
-
-        return (dt.getTime() / 1000);
+    public static long getEpochTime() {
+        return new Date().getTime() / 1000;
     }
 
-    public static String GetAgo(Integer seconds) {
+    public static String getAgo(int seconds) {
+        int currentTime = (int) getEpochTime();
 
-        Date dt = new Date();
-        Integer CurrentTime = (int) (dt.getTime() / 1000);
+        int difference = (currentTime - seconds);
 
-        Integer Difference = (CurrentTime - seconds);
+        StringBuilder timestampStr = new StringBuilder();
 
-        String Timestamp = "";
-
-        if(Math.floor(Difference / 86400) > 0) {
-            Integer Days = (int) Math.floor(Difference / 86400);
-            Timestamp += Days.toString() + "d";
-            Difference = (Difference - (Days * 86400));
+        if(Math.floor(difference / 86400) > 0) {
+            int days = (int) Math.floor(difference / 86400);
+            timestampStr.append(days).append("d");
+            difference = (difference - (days * 86400));
         }
 
-        if(Math.floor(Difference / 3600) > 0) {
-            Integer Hours = (int) Math.floor(Difference / 3600);
-            Timestamp += Hours.toString() + "h";
-            Difference = (Difference - (Hours * 3600));
+        if(Math.floor(difference / 3600) > 0) {
+            int hours = (int) Math.floor(difference / 3600);
+            timestampStr.append(hours).append("h");
+            difference = (difference - (hours * 3600));
         }
 
-        if(Math.floor(Difference / 60) > 0) {
-            Integer Minutes = (int) Math.floor(Difference / 60);
-            Timestamp += Minutes.toString() + "m";
-            Difference = (Difference - (Minutes * 60));
+        if(Math.floor(difference / 60) > 0) {
+            int minutes = (int) Math.floor(difference / 60);
+            timestampStr.append(minutes).append("m");
+            difference = (difference - (minutes * 60));
         }
 
-        if(Timestamp == "") {
-            Timestamp = Difference.toString() + "s";
+        if(timestampStr.length() == 0) {
+            timestampStr.append(difference).append("s");
         }
 
-        return Timestamp;
+        return timestampStr.toString();
     }
 }
