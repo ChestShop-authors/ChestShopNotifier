@@ -101,7 +101,7 @@ public class History extends BukkitRunnable {
             return;
         }
 
-        for(int i = historyEntries.size(); i > 0 && i > historyEntries.size() - maxRows; i++) {
+        for(int i = 0; i < historyEntries.size() && i < maxRows; i++) {
             HistoryEntry entry = historyEntries.get(i);
             String msgString = entry.getType() == TransactionType.BUY ? plugin.getMessage("history-bought") : plugin.getMessage("history-sold");
 
