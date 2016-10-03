@@ -101,7 +101,7 @@ public class ChestShopNotifier extends JavaPlugin implements Listener {
                 }
 
                 if(pluginEnabled) {
-                    getLogger().log(Level.WARNING, "Database connected!");
+                    getLogger().log(Level.INFO, "Database connected!");
                     if (sender != null) {
                         sender.sendMessage(ChatColor.LIGHT_PURPLE + "ChestShop Notifier // " + ChatColor.GREEN + "Reloaded!");
                         sender.sendMessage(ChatColor.LIGHT_PURPLE + "ChestShop Notifier // " + ChatColor.GREEN + "Database connected!");
