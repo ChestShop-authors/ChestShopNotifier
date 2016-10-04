@@ -25,7 +25,7 @@ public class History extends BukkitRunnable {
     private final CommandSender sender;
     private final boolean markRead;
     private int page;
-    private final int maxRows = 25;
+    private final int maxRows;
 
     private final List<HistoryEntry> historyEntries = new ArrayList<>();
 
@@ -37,6 +37,7 @@ public class History extends BukkitRunnable {
         this.sender = sender;
         this.page = page > 0 ? page : 1;
         this.markRead = markRead;
+        maxRows = plugin.getConfig().getInt("history.max-rows");
     }
 
 

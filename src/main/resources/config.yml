@@ -9,6 +9,9 @@ notifications:
   notify-on-user-join: true
   delay-seconds: 5
 
+history:
+  max-rows: 10
+
 debugging:
   verbose: true
 
