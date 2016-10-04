@@ -24,16 +24,18 @@ public class History extends BukkitRunnable {
     private final UUID userId;
     private final CommandSender sender;
     private final boolean markRead;
-    private int maxRows = 25;
+    private int page;
+    private final int maxRows = 25;
 
     private final List<HistoryEntry> historyEntries = new ArrayList<>();
 
     private ChestShopNotifier plugin;
 
-    public History(ChestShopNotifier plugin, UUID userId, CommandSender sender, boolean markRead) {
+    public History(ChestShopNotifier plugin, UUID userId, CommandSender sender, int page, boolean markRead) {
         this.plugin = plugin;
         this.userId = userId;
         this.sender = sender;
+        this.page = page > 0 ? page : 1;
         this.markRead = markRead;
     }
 
@@ -106,11 +108,15 @@ public class History extends BukkitRunnable {
 
         if(historyEntries.isEmpty()) {
             if(plugin.getMessage("history-empty") != null) sender.sendMessage(plugin.getMessage("history-empty"));
-
             return;
         }
 
-        for(int i = 0; i < historyEntries.size() && i < maxRows; i++) {
+        int maxPages = (int) Math.ceil(historyEntries.size() / maxRows);
+        if (page > maxPages) {
+            page = maxPages;
+        }
+
+        for(int i = maxRows * (page - 1); i < historyEntries.size() && i < maxRows * page; i++) {
             HistoryEntry entry = historyEntries.get(i);
             String msgString = entry.getType() == TransactionType.BUY ? plugin.getMessage("history-bought") : plugin.getMessage("history-sold");
 
@@ -133,7 +139,14 @@ public class History extends BukkitRunnable {
         }
 
         sender.sendMessage(" ");
-        if (!other && sender.hasPermission("csn.command.clear")) {
+        if (maxPages > 1 && plugin.getMessage("history-footer-page") != null) {
+            sender.sendMessage(
+                    plugin.getMessage("history-footer-page")
+                            .replace("{current}", String.valueOf(page))
+                            .replace("{pages}", String.valueOf(maxPages))
+            );
+        }
+        if (!other && sender.hasPermission("csn.command.clear") && plugin.getMessage("history-footer-clear") != null) {
             sender.sendMessage(plugin.getMessage("history-footer-clear"));
         }
 

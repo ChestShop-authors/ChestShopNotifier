@@ -15,7 +15,7 @@ public class Help {
         helpItems.add("&c ");
         helpItems.add("&7 /csn &dhelp &f- Plugin usage & commands");
         if (sender.hasPermission("csn.command.history")) {
-            helpItems.add("&7 /csn &dhistory &f- View unread sales");
+            helpItems.add("&7 /csn &dhistory [<page>]&f- View sales");
         }
         if (sender.hasPermission("csn.command.read")) {
             helpItems.add("&7 /csn &dread &f- Mark all sales as read");
@@ -25,6 +25,9 @@ public class Help {
         }
         helpItems.add("&c ");
 
+        if (sender.hasPermission("csn.command.history.others")) {
+            helpItems.add("&7 /csn &dhistory <username> [<page>]&f- View sales of another player");
+        }
         if (sender.hasPermission("csn.command.cleandatabase")) {
             helpItems.add("&7 /csn &ccleandatabase &f- Remove database entries. Parameters:");
             helpItems.add("&c --older-than, -o <days> &f- Removes entries older than <days>");

@@ -123,36 +123,46 @@ public class CommandRunner implements CommandExecutor {
 
 
                 boolean markRead;
-                UUID userId;
+                UUID userId = (sender instanceof Player) ? ((Player) sender).getUniqueId() : NameManager.getUUID(Properties.ADMIN_SHOP_NAME);
+                int page = 1;
                 if(args.length > 1) {
-                    if(args.length > 2) {
-                        sender.sendMessage(ChatColor.RED + "Too many arguments! /csn history [username]");
-                        return true;
-                    }
-
-                    OfflinePlayer target;
-                    if(sender.hasPermission("csn.command.history.others")) {
-                        target = plugin.getServer().getPlayer(args[1]);
-                        if (target == null) {
-                            target = plugin.getServer().getOfflinePlayer(args[1]);
+                    try {
+                        page = Integer.parseInt(args[1]);
+                    } catch (NumberFormatException e1) {
+                        if(sender.hasPermission("csn.command.history.others")) {
+                            userId = NameManager.getUUID(args[1]);
+                            if (userId == null) {
+                                OfflinePlayer target = plugin.getServer().getPlayer(args[1]);
+                                if (target == null) {
+                                    target = plugin.getServer().getOfflinePlayer(args[1]);
+                                }
+                                if (target != null) {
+                                    userId = target.getUniqueId();
+                                } else {
+                                    sender.sendMessage(ChatColor.RED + "The user '" + args[1] + "' was not found.");
+                                    return true;
+                                }
+                                if (args.length > 2) {
+                                    try {
+                                        page = Integer.parseInt(args[2]);
+                                    } catch (NumberFormatException e2) {
+                                        sender.sendMessage(ChatColor.YELLOW + args[2] + ChatColor.RED + " is not a valid page number input for /csn history <user> <page>!");
+                                        return true;
+                                    }
+                                }
+                            }
+                        } else {
+                            sender.sendMessage(ChatColor.YELLOW + args[2] + ChatColor.RED + " is not a valid page number input for /csn history <user> <page>!");
+                            return true;
                         }
-                    } else {
-                        sender.sendMessage(ChatColor.RED + "You don't have the permission to see other user's history! You can only use /csn history!");
-                        return true;
                     }
 
-                    if(target == null) {
-                        sender.sendMessage(ChatColor.RED + "The user '" + args[1] + "' was not found.");
-                        return true;
-                    }
-                    userId = target.getUniqueId();
                     markRead = false;
                 } else {
-                    userId = (sender instanceof Player) ? ((Player) sender).getUniqueId() : NameManager.getUUID(Properties.ADMIN_SHOP_NAME);
                     markRead = true;
                 }
 
-                new History(plugin, userId, sender, markRead).runTaskAsynchronously(plugin);
+                new History(plugin, userId, sender, page, markRead).runTaskAsynchronously(plugin);
 
                 return true;
 
