@@ -16,6 +16,7 @@ import org.bukkit.command.CommandSender;
 import com.wfector.notifier.ChestShopNotifier;
 import com.wfector.util.Time;
 import com.Acrobot.ChestShop.Economy.Economy;
+import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
 public class History extends BukkitRunnable {
@@ -92,7 +93,15 @@ public class History extends BukkitRunnable {
     }
 
     private void showResults() {
-        if(plugin.getMessage("history-caption") != null) sender.sendMessage(plugin.getMessage("history-caption"));
+        boolean other = !(sender instanceof Player) || !((Player) sender).getUniqueId().equals(userId);
+        if(plugin.getMessage("history-caption") != null) {
+            String message = plugin.getMessage("history-caption");
+            if (other) {
+                String userName = NameManager.getUsername(userId);
+                message += ChatColor.GRAY + " (" + (userName != null ? userName : userId) + ")";
+            }
+            sender.sendMessage(message);
+        }
         sender.sendMessage("");
 
         if(historyEntries.isEmpty()) {
@@ -124,7 +133,7 @@ public class History extends BukkitRunnable {
         }
 
         sender.sendMessage(" ");
-        if (sender.hasPermission("csn.command.clear")) {
+        if (!other && sender.hasPermission("csn.command.clear")) {
             sender.sendMessage(plugin.getMessage("history-footer-clear"));
         }
 
