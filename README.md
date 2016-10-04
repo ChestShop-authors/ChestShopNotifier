@@ -24,8 +24,14 @@ If it says the database was connected, you're good to go!
 ##Commands
 
 - /csn help → Shows available commands
-- /csn history [username] → Shows unread sale history from database
-- /csn clear → Marks all sale history as read for your user
+- /csn history [page] → Shows sale history and marks them as read
+- /csn history [username [page]] → Shows sale history of another player
+- /csn clear → Removes as read entries (from the database)
+- /csn cleandatabase → Remove database entries. Parameters:    
+  --older-than, -o days → Removes entries older than days    
+  --user, -user username/uuid → Removes entries from a single user only    
+  --read-only, -r → Removes only read entries, default behaviour    
+  --all, -a → Removes all entries
 - /csn upload → Forces the plugin to upload all data to the database (in v1.1 and higher this should be only used after database connection problems!)
 - /csn reload → Reloads configuration and connects to database using new config
 - /csn convert → Converts the database table csn to UUIDs. (table csn gets converted in csnUUID and the username table renamed to csnOLD) 
@@ -33,8 +39,9 @@ If it says the database was connected, you're good to go!
 ##Permissions
 
 - csn.user → Allows user to receive notifications when they log in, and access to /csn history.
-- csn.history.others → Allows user to view the unread history of other users ([username] argument)
 - csn.admin → Super permission node. Access to all commands. (especially upload, reload and convert) 
+
+For all permissions take a look at the [plugin.yml](https://github.com/Phoenix616/ChestShopNotifier/blob/master/src/main/resources/plugin.yml#L14).
 
 ##Requirements
 
@@ -43,11 +50,16 @@ If it says the database was connected, you're good to go!
 
 ##Planned Features
 
-- [x] ~~UUIDsupport~~ *done in v1.1.2 and up*
-- [x] ~~Look up the sales of offline players~~ *done in v1.1.2 and up*
-- [x] ~~Ignore ChestShop's Admin Shop~~ *done in v1.1.2 and up*
+To request features open an [issue](https://github.com/Phoenix616/ChestShopNotifier/issues)!
+
+- [x] ~~UUIDsupport~~ *done in v1.1.2*
+- [x] ~~Look up the sales of offline players~~ *done in v1.1.2*
+- [x] ~~Ignore ChestShop's Admin Shop~~ *done in v1.1.2*
+- [x] ~~History pagination~~ *done in v1.2*
 - [ ] Auto updater & version checker
 - [ ] Translation system *(partially done in v1.1.2, you can set your own messages in the config)*
+
+For all changes take a look at the [commits](https://github.com/Phoenix616/ChestShopNotifier/commits/master)!
 
 ##Demonstration
 
