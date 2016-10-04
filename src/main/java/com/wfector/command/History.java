@@ -131,7 +131,7 @@ public class History extends BukkitRunnable {
 
             if (!entry.isUnread()) {
                 // Make read messages gray
-                msgString = ChatColor.GRAY + ChatColor.stripColor(msgString);
+                msgString = replaceAllColorsButOne(msgString, ChatColor.WHITE, ChatColor.GRAY);
             }
 
             sender.sendMessage(msgString);
@@ -149,6 +149,10 @@ public class History extends BukkitRunnable {
             sender.sendMessage(plugin.getMessage("history-footer-clear"));
         }
 
+    }
+
+    private String replaceAllColorsButOne(String msg, ChatColor color, ChatColor keep) {
+        return msg.replaceAll("(?i)" + ChatColor.COLOR_CHAR + "[^" + keep.getChar() + "]" + "", color.toString());
     }
 
     private class HistoryEntry {
