@@ -134,8 +134,6 @@ public class History extends BukkitRunnable {
             }
 
             sender.sendMessage(msgString);
-
-            i++;
         }
 
         sender.sendMessage(" ");
