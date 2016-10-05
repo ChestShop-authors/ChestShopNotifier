@@ -152,7 +152,7 @@ public class CommandRunner implements CommandExecutor {
                                 }
                             }
                         } else {
-                            sender.sendMessage(ChatColor.YELLOW + args[2] + ChatColor.RED + " is not a valid page number input for /csn history <user> <page>!");
+                            sender.sendMessage(ChatColor.YELLOW + args[1] + ChatColor.RED + " is not a valid page number input for /csn history <page>!");
                             return true;
                         }
                     }
