@@ -142,13 +142,13 @@ public class CommandRunner implements CommandExecutor {
                                     sender.sendMessage(ChatColor.RED + "The user '" + args[1] + "' was not found.");
                                     return true;
                                 }
-                                if (args.length > 2) {
-                                    try {
-                                        page = Integer.parseInt(args[2]);
-                                    } catch (NumberFormatException e2) {
-                                        sender.sendMessage(ChatColor.YELLOW + args[2] + ChatColor.RED + " is not a valid page number input for /csn history <user> <page>!");
-                                        return true;
-                                    }
+                            }
+                            if (args.length > 2) {
+                                try {
+                                    page = Integer.parseInt(args[2]);
+                                } catch (NumberFormatException e2) {
+                                    sender.sendMessage(ChatColor.YELLOW + args[2] + ChatColor.RED + " is not a valid page number input for /csn history <user> <page>!");
+                                    return true;
                                 }
                             }
                         } else {
