@@ -51,7 +51,7 @@ public class ChestShopNotifier extends JavaPlugin implements Listener {
             new BukkitRunnable() {
                 @Override
                 public void run() {
-                    getLogger().log(Level.INFO, "Automatich database cleaning on startup is enabled!");
+                    getLogger().log(Level.INFO, "Automatic database cleaning on startup is enabled!");
                     String parameters = getConfig().getString("clean-on-startup.parameters").trim();
                     getLogger().log(Level.INFO, "Parameters: " + parameters);
                     getServer().dispatchCommand(getServer().getConsoleSender(), "csn cleandatabase " + parameters);
