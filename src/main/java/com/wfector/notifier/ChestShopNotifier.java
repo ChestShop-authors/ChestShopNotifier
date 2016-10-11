@@ -47,6 +47,18 @@ public class ChestShopNotifier extends JavaPlugin implements Listener {
         saveDefaultConfig();
         updateConfiguration(null);
 
+        if (getConfig().getBoolean("clean-on-startup.enabled") && getConfig().getString("clean-on-startup.command", null) != null) {
+            new BukkitRunnable() {
+                @Override
+                public void run() {
+                    getLogger().log(Level.INFO, "Automatich database cleaning on startup is enabled!");
+                    String parameters = getConfig().getString("clean-on-startup.parameters").trim();
+                    getLogger().log(Level.INFO, "Parameters: " + parameters);
+                    getServer().dispatchCommand(getServer().getConsoleSender(), "csn cleandatabase " + parameters);
+                }
+            }.runTaskLater(this, 200);
+        }
+
         getServer().getPluginManager().registerEvents(this, this);
     }
 
@@ -139,7 +151,7 @@ public class ChestShopNotifier extends JavaPlugin implements Listener {
     @EventHandler
     public void onPlayerJoinEvent(PlayerJoinEvent e) {
         if(!joinNotificationEnabled) {
-            debug("Join notifications are " + joinNotificationEnabled + ", skipping...");
+            debug("Join notifications are disabled, skipping...");
             return;
         }
 

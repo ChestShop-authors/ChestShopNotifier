@@ -1,6 +1,5 @@
 # Chest Shop Notifier
-# Config file for 1.1.2
-# August 19 2014
+# Config file for 1.2
 
 logging:
   admin-shop: true
@@ -21,7 +20,11 @@ database:
   dbname: 'database1'
   username: 'dbadmin'
   password: '123456'
-  
+
+clean-on-startup:
+  enabled: false
+  parameters: "--older-than 30 --all"
+
 messages:
   sales: "&c ** You made &f{sales} sales&c since you last checked."
   history-cmd: "&c ** To see them, type &f/csn history&c."
