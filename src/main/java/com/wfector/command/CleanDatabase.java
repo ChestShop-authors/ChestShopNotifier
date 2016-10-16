@@ -33,7 +33,7 @@ public class CleanDatabase extends BukkitRunnable {
             Statement statement = c.createStatement();
             List<String> where = new ArrayList<>();
             if (readOnly) {
-                where.add("`Unread`='0'");
+                where.add("`Unread`='1'");
             }
             if (cleanBefore > 0) {
                 where.add("`Time`<" + (int) (Time.getEpochTime() - cleanBefore * 24 * 60 * 60));
