@@ -29,7 +29,7 @@ public class Clear extends BukkitRunnable {
         try {
             c = plugin.getConnection();
             Statement statement = c.createStatement();
-            statement.executeUpdate("DELETE FROM csnUUID WHERE `Unread`='0' AND `ShopOwnerId`='" + senderId.toString() + "'");
+            statement.executeUpdate("DELETE FROM csnUUID WHERE `Unread`='1' AND `ShopOwnerId`='" + senderId.toString() + "'");
 
             if(plugin.getMessage("history-clear") != null) sender.sendMessage(plugin.getMessage("history-clear"));
         } catch (SQLException e) {
