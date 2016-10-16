@@ -113,7 +113,7 @@ public class History extends BukkitRunnable {
         }
 
         int maxPages = (int) Math.ceil(historyEntries.size() / maxRows);
-        if (page > maxPages) {
+        if (maxPages > 0 && page > maxPages) {
             page = maxPages;
         }
 
