@@ -32,11 +32,13 @@
             <groupId>org.spigotmc</groupId>
             <artifactId>spigot-api</artifactId>
             <version>1.10-R0.1-SNAPSHOT</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.acrobot.chestshop</groupId>
             <artifactId>chestshop</artifactId>
             <version>3.8.16-SNAPSHOT</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.zaxxer</groupId>
@@ -92,7 +94,7 @@
             </plugin>
             <plugin>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>2.2</version>
+                <version>2.4.3</version>
                 <configuration>
                     <artifactSet>
                         <includes>
@@ -100,6 +102,16 @@
                             <include>com.zaxxer:*</include>
                         </includes>
                     </artifactSet>
+                    <relocations>
+                        <relocation>
+                            <pattern>org.slf4j</pattern>
+                            <shadedPattern>com.wfector.lib.slf4j</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>com.zaxxer.hikari</pattern>
+                            <shadedPattern>com.wfector.lib.hikari</shadedPattern>
+                        </relocation>
+                    </relocations>
                 </configuration>
                 <executions>
                     <execution>
