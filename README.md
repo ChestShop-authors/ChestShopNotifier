@@ -2,13 +2,13 @@
 
 CSN (ChestShop Notifier) is a plugin that records ChestShop transactions to a MySQL database. When a shop owner logs onto the server, they will be presented with an option to view sales from when they were offline. 
 
-##Downloads
+## Downloads
 
 You can download release versions of the plugin from the [ChestShopNotifier Bukkit dev page](https://dev.bukkit.org/bukkit-plugins/csn/)!
 
 Development builds can be found on the [Minebench.de](https://www.minebench.de/) Jenkins build server: http://ci.minebench.de/job/ChestShopNotifier/
 
-##Installation Instructions
+## Installation Instructions
 
 Installing this plugin is simple. Just download and drag ChestShopNotifier.jar into your server's *plugins* directory. 
 
@@ -21,7 +21,7 @@ Next, restart and log into your server. When you try to use */csn history*, you'
 
 If it says the database was connected, you're good to go!
 
-##Commands
+## Commands
 
 - /csn help → Shows available commands
 - /csn history [page] → Shows sale history and marks them as read
@@ -36,19 +36,19 @@ If it says the database was connected, you're good to go!
 - /csn reload → Reloads configuration and connects to database using new config
 - /csn convert → Converts the database table csn to UUIDs. (table csn gets converted in csnUUID and the username table renamed to csnOLD) 
 
-##Permissions
+## Permissions
 
 - csn.user → Allows user to receive notifications when they log in, and access to /csn history.
 - csn.admin → Super permission node. Access to all commands. (especially upload, reload and convert) 
 
 For all permissions take a look at the [plugin.yml](https://github.com/Phoenix616/ChestShopNotifier/blob/master/src/main/resources/plugin.yml#L14).
 
-##Requirements
+## Requirements
 
 - Functional MySQL server. This plugin only uses MySQL, nothing else.
 - ChestShop installed and running. 
 
-##Planned Features
+## Planned Features
 
 To request features open an [issue](https://github.com/Phoenix616/ChestShopNotifier/issues)!
 
@@ -61,8 +61,8 @@ To request features open an [issue](https://github.com/Phoenix616/ChestShopNotif
 
 For all changes take a look at the [commits](https://github.com/Phoenix616/ChestShopNotifier/commits/master)!
 
-##Demonstration
+## Demonstration
 
-![Preview 1](http://dev.bukkit.org/media/images/73/384/Preview1.jpg)
+![Preview 1](https://media-elerium.cursecdn.com/attachments/128/945/Preview1.jpg)
 
-![Preview 2](http://dev.bukkit.org/media/images/73/385/Preview2.jpg)
+![Preview 2](https://media-elerium.cursecdn.com/attachments/128/946/Preview2.jpg)
