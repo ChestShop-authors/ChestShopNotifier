@@ -119,7 +119,7 @@ public class History extends BukkitRunnable {
 
         for(int i = maxRows * (page - 1); i < historyEntries.size() && i < maxRows * page; i++) {
             HistoryEntry entry = historyEntries.get(i);
-            String msgString = entry.getType() == TransactionType.BUY ? plugin.getMessage("history-bought") : plugin.getMessage("history-sold");
+            String msgString = plugin.getMessage("history-" + (entry.getType() == TransactionType.BUY ? "bought" : "sold") + (entry.isUnread() ? "" : "-read"));
 
             String playerName = NameManager.getUsername(entry.getCustomerId());
 
@@ -128,11 +128,6 @@ public class History extends BukkitRunnable {
             msgString = msgString.replace("{item}", entry.getItemId().replace(" ", ""));
             msgString = msgString.replace("{timeago}", Time.getAgo(entry.getTime()));
             msgString = msgString.replace("{money}", Economy.formatBalance(entry.getPrice() * entry.getQuantity()));
-
-            if (!entry.isUnread()) {
-                // Make read messages gray
-                msgString = replaceAllColorsButOne(msgString, ChatColor.WHITE, ChatColor.GRAY);
-            }
 
             sender.sendMessage(msgString);
         }
@@ -149,10 +144,6 @@ public class History extends BukkitRunnable {
             sender.sendMessage(plugin.getMessage("history-footer-clear"));
         }
 
-    }
-
-    private String replaceAllColorsButOne(String msg, ChatColor color, ChatColor keep) {
-        return msg.replaceAll("(?i)" + ChatColor.COLOR_CHAR + "[^" + keep.getChar() + "]" + "", color.toString());
     }
 
     private class HistoryEntry {
