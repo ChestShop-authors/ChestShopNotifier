@@ -52,7 +52,9 @@ public class CleanDatabase extends BukkitRunnable {
 
             sender.sendMessage(ChatColor.RED + "Cleaned database from " + (readOnly ? "read" : "all") + " entries!");
         } catch (SQLException e) {
-            sender.sendMessage(ChatColor.RED + "Database error while executing this command!");
+            if(plugin.getMessage("database-error-oncommand") != null) {
+                sender.sendMessage(plugin.getMessage("database-error-oncommand"));
+            }
             e.printStackTrace();
         } finally {
             ChestShopNotifier.close(c);
