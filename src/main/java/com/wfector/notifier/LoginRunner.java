@@ -43,13 +43,8 @@ public class LoginRunner extends BukkitRunnable {
 
             if (amount > 0) {
                 plugin.debug("Ran for user '" + p.getName() + "'");
-                if(plugin.getMessage("sales") != null) {
-                    p.sendMessage(plugin.getMessage("sales").replace("{sales}", String.valueOf(amount)));
-                }
-
-                if(plugin.getMessage("history-cmd") != null) {
-                    p.sendMessage(plugin.getMessage("history-cmd"));
-                }
+                p.sendMessage(plugin.getMessage("sales", "sales", String.valueOf(amount)));
+                p.sendMessage(plugin.getMessage("history-cmd"));
             }
         } catch (SQLException e) {
             e.printStackTrace();
