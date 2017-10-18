@@ -115,22 +115,14 @@ public class ChestShopNotifier extends JavaPlugin implements Listener {
                 if(pluginEnabled) {
                     getLogger().log(Level.INFO, "Database connected!");
                     if (sender != null) {
-                        if(getMessage("reload-success") != null) {
-                            sender.sendMessage(getMessage("reload-success"));
-                        }
-                        if(getMessage("reload-database-success") != null) {
-                            sender.sendMessage(getMessage("reload-database-success"));
-                        }
+                        sender.sendMessage(getMessage("reload-success"));
+                        sender.sendMessage(getMessage("reload-database-success"));
                     }
                 } else {
                     getLogger().log(Level.WARNING, "Failed to connect to the database! Disabling connections!");
                     if (sender != null) {
-                        if(getMessage("reload-success") != null) {
-                            sender.sendMessage(getMessage("reload-success"));
-                        }
-                        if(getMessage("reload-database-fail") != null) {
-                            sender.sendMessage(getMessage("reload-database-fail"));
-                        }
+                        sender.sendMessage(getMessage("reload-success"));
+                        sender.sendMessage(getMessage("reload-database-fail"));
                     }
                 }
             }
@@ -147,13 +139,59 @@ public class ChestShopNotifier extends JavaPlugin implements Listener {
         }
     }
 
+    public static String replaceChatColors(String input) {
+        if (input == null) {
+            return null;
+        }
+//        for (int i = 0; i < ChatColor.values().length; i++) {
+//            // the enum contains no element called "ChatColor.OBFUSCATED",
+//            // but ChatColor.values()[] does !?
+//            if (!ChatColor.values()[i].name()
+//                    .equalsIgnoreCase("obfuscated")) {
+//                String replace = "&"
+//                        + ChatColor.values()[i].getChar();
+//                input = input.replace(
+//                        replace,
+//                        ChatColor.valueOf(
+//                                ChatColor.values()[i].name().toUpperCase())
+//                                .toString());
+//            }
+//        }
+//        return input;
+        return ChatColor.translateAlternateColorCodes('&', input);
+    }
+
     /**
      * Gets a message from the config file.
-     * @param string The name of the message to get
+     * @param key The name of the message to get
      * @return The message or null if it doesn't exist
      */
-    public String getMessage(String string) {
-        return (getConfig().contains("messages." + string)) ? ChatColor.translateAlternateColorCodes('&', getConfig().getString("messages." + string)) : null;
+    public String getMessage(String key) {
+        String s = getConfig().getString("messages." + key);
+        if (s != null && !s.isEmpty()) {
+            return ChestShopNotifier.replaceChatColors(s);
+        } else {
+            return "Missing string 'messages." + key + "' in config.yml";
+        }
+    }
+
+    /**
+     * returns a texty string
+     *
+     * @param key the config path
+     * @param replacements Optional replacements. Use {index} in the message to address them.
+     * @return the text
+     */
+    public String getMessage(String key, String... replacements) {
+        String s = getConfig().getString("messages." + key);
+        if (s != null && !s.isEmpty()) {
+            for (int i = 0; i < replacements.length; i++) {
+                s = s.replace("{" + i + "}", replacements[i]);
+            }
+            return ChestShopNotifier.replaceChatColors(s);
+        } else {
+            return "Missing string 'messages." + key + "' in config.yml";
+        }
     }
 
     @EventHandler
