@@ -30,11 +30,9 @@ public class Clear extends BukkitRunnable {
             Statement statement = c.createStatement();
             statement.executeUpdate("DELETE FROM csnUUID WHERE `Unread`='1' AND `ShopOwnerId`='" + senderId.toString() + "'");
 
-            if(plugin.getMessage("history-clear") != null) sender.sendMessage(plugin.getMessage("history-clear"));
+            sender.sendMessage(plugin.getMessage("history-clear"));
         } catch (SQLException e) {
-            if(plugin.getMessage("database-error-oncommand") != null) {
-                sender.sendMessage(plugin.getMessage("database-error-oncommand"));
-            }
+            sender.sendMessage(plugin.getMessage("database-error-oncommand"));
             e.printStackTrace();
         } finally {
             ChestShopNotifier.close(c);
