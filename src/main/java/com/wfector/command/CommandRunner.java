@@ -25,21 +25,27 @@ public class CommandRunner implements CommandExecutor {
     public boolean onCommand(final CommandSender sender, Command cmd, String label, String[] args) {
         if(args.length == 0) {
             Help.SendDialog(sender);
+            return true;
         } else {
             if(args[0].equalsIgnoreCase("reload") && (sender.hasPermission("csn.command.reload"))) {
-                sender.sendMessage(ChatColor.LIGHT_PURPLE + "ChestShop Notifier // " + ChatColor.GRAY + "Reloading, please wait...");
-
                 plugin.updateConfiguration(sender);
+                if(plugin.getMessage("reload-cmd") != null) {
+                    sender.sendMessage(plugin.getMessage("reload-cmd"));
+                }
                 return true;
 
             } else if(args[0].equalsIgnoreCase("convert") && sender.hasPermission("csn.admin")) {
 
                 if(!plugin.isPluginEnabled()) {
-                    sender.sendMessage(ChatColor.RED + "Invalid database connection. Please edit config and /csn reload.");
+                    if(plugin.getMessage("database-error") != null) {
+                        sender.sendMessage(plugin.getMessage("database-error"));
+                    }
                     return true;
                 }
 
-                sender.sendMessage(ChatColor.RED + "Attempting to convert database...");
+                if(plugin.getMessage("database-convert") != null) {
+                    sender.sendMessage(plugin.getMessage("database-convert"));
+                }
                 plugin.getLogger().log(Level.INFO, "Attempting to convert database...");
 
                 new Converter(plugin, sender).runTaskAsynchronously(plugin);
@@ -47,7 +53,9 @@ public class CommandRunner implements CommandExecutor {
 
             } else if(args[0].equalsIgnoreCase("upload") && sender.hasPermission("csn.command.upload")) {
                 if(!plugin.isPluginEnabled()) {
-                    sender.sendMessage(ChatColor.RED + "Invalid database connection. Please edit config and /csn reload.");
+                    if(plugin.getMessage("database-error") != null) {
+                        sender.sendMessage(plugin.getMessage("database-error"));
+                    }
                     return true;
                 }
 
@@ -57,7 +65,9 @@ public class CommandRunner implements CommandExecutor {
 
             } else if(args[0].equalsIgnoreCase("cleandatabase") && sender.hasPermission("csn.command.cleandatabase")) {
                 if(!plugin.isPluginEnabled()) {
-                    sender.sendMessage(ChatColor.RED + "Invalid database connection. Please edit config and /csn reload.");
+                    if(plugin.getMessage("database-error") != null) {
+                        sender.sendMessage(plugin.getMessage("database-error"));
+                    }
                     return true;
                 }
 
@@ -68,7 +78,9 @@ public class CommandRunner implements CommandExecutor {
                         CleanDatabase.Parameter param = CleanDatabase.Parameter.getFromInput(args[i]);
                         if (param != null) {
                             if (i + 1 + param.getArgs().length > args.length) {
-                                sender.sendMessage(ChatColor.RED + "Missing parameter arguments: " + param.getUsage());
+                                if(plugin.getMessage("missing-arguments") != null) {
+                                    sender.sendMessage(plugin.getMessage("missing-arguments").replace("{usage}", param.getUsage()));
+                                }
                                 return true;
                             }
                             switch (param) {
@@ -77,7 +89,9 @@ public class CommandRunner implements CommandExecutor {
                                         int days = Integer.parseInt(args[i + 1]);
                                         cleaner.cleanBefore(days);
                                     } catch (NumberFormatException e) {
-                                        sender.sendMessage(ChatColor.RED + args[i + 1] + " is not a valid number input for " + param.getUsage() + "!");
+                                        if(plugin.getMessage("invalid-number") != null) {
+                                            sender.sendMessage(plugin.getMessage("invalid-number").replace("{typo}", args[i + 1]).replace("{usage}", param.getUsage()));
+                                        }
                                         return true;
                                     }
                                     break;
@@ -91,7 +105,9 @@ public class CommandRunner implements CommandExecutor {
                                     if (userId != null) {
                                         cleaner.cleanUser(userId);
                                     } else {
-                                        sender.sendMessage(ChatColor.RED + args[i + 1] + " is not a valid username/uuid input for " + param.getUsage() + "!");
+                                        if(plugin.getMessage("invalid-username") != null) {
+                                            sender.sendMessage(plugin.getMessage("invalid-username").replace("{typo}", args[i + 1]).replace("{usage}", param.getUsage()));
+                                        }
                                     }
                                     break;
                                 case READ_ONLY:
@@ -117,7 +133,9 @@ public class CommandRunner implements CommandExecutor {
             } else if(args[0].equalsIgnoreCase("history") && sender.hasPermission("csn.command.history")) {
 
                 if(!plugin.isPluginEnabled()) {
-                    sender.sendMessage(ChatColor.RED + "Invalid database connection. Please edit config and /csn reload.");
+                    if(plugin.getMessage("database-error") != null) {
+                        sender.sendMessage(plugin.getMessage("database-error"));
+                    }
                     return true;
                 }
 
@@ -139,7 +157,9 @@ public class CommandRunner implements CommandExecutor {
                                 if (target != null) {
                                     userId = target.getUniqueId();
                                 } else {
-                                    sender.sendMessage(ChatColor.RED + "The user '" + args[1] + "' was not found.");
+                                    if(plugin.getMessage("user-not-found") != null) {
+                                        sender.sendMessage(plugin.getMessage("user-not-found").replace("{player}", args[1]));
+                                    }
                                     return true;
                                 }
                             }
@@ -147,12 +167,16 @@ public class CommandRunner implements CommandExecutor {
                                 try {
                                     page = Integer.parseInt(args[2]);
                                 } catch (NumberFormatException e2) {
-                                    sender.sendMessage(ChatColor.YELLOW + args[2] + ChatColor.RED + " is not a valid page number input for /csn history <user> <page>!");
+                                    if(plugin.getMessage("page-not-found-other") != null) {
+                                        sender.sendMessage(plugin.getMessage("page-not-found-other").replace("{page}", args[2]));
+                                    }
                                     return true;
                                 }
                             }
                         } else {
-                            sender.sendMessage(ChatColor.YELLOW + args[1] + ChatColor.RED + " is not a valid page number input for /csn history <page>!");
+                            if(plugin.getMessage("page-not-found") != null) {
+                                sender.sendMessage(plugin.getMessage("page-not-found").replace("{page}", args[1]));
+                            }
                             return true;
                         }
                     }
@@ -168,7 +192,9 @@ public class CommandRunner implements CommandExecutor {
 
             } else if(args[0].equalsIgnoreCase("clear") && sender.hasPermission("csn.command.clear")) {
                 if(!plugin.isPluginEnabled()) {
-                    sender.sendMessage(ChatColor.RED + "Invalid database connection. Please edit config and /csn reload.");
+                    if(plugin.getMessage("database-error") != null) {
+                        sender.sendMessage(plugin.getMessage("database-error"));
+                    }
                     return true;
                 }
 
@@ -178,7 +204,9 @@ public class CommandRunner implements CommandExecutor {
             }
         }
 
-        sender.sendMessage(ChatColor.RED + "Command not recognized. Type /csn help for help.");
+        if(plugin.getMessage("unrecognized-command") != null) {
+            sender.sendMessage(plugin.getMessage("unrecognized-command"));
+        }
         return true;
     }
 }
