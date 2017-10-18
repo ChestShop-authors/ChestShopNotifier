@@ -6,7 +6,6 @@ import java.util.logging.Level;
 import com.Acrobot.ChestShop.Configuration.Properties;
 import com.Acrobot.ChestShop.UUIDs.NameManager;
 import com.wfector.notifier.BatchRunner;
-import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -29,23 +28,17 @@ public class CommandRunner implements CommandExecutor {
         } else {
             if(args[0].equalsIgnoreCase("reload") && (sender.hasPermission("csn.command.reload"))) {
                 plugin.updateConfiguration(sender);
-                if(plugin.getMessage("reload-cmd") != null) {
-                    sender.sendMessage(plugin.getMessage("reload-cmd"));
-                }
+                sender.sendMessage(plugin.getMessage("reload-cmd"));
                 return true;
 
             } else if(args[0].equalsIgnoreCase("convert") && sender.hasPermission("csn.admin")) {
 
                 if(!plugin.isPluginEnabled()) {
-                    if(plugin.getMessage("database-error") != null) {
-                        sender.sendMessage(plugin.getMessage("database-error"));
-                    }
+                    sender.sendMessage(plugin.getMessage("database-error"));
                     return true;
                 }
 
-                if(plugin.getMessage("database-convert") != null) {
-                    sender.sendMessage(plugin.getMessage("database-convert"));
-                }
+                sender.sendMessage(plugin.getMessage("database-convert"));
                 plugin.getLogger().log(Level.INFO, "Attempting to convert database...");
 
                 new Converter(plugin, sender).runTaskAsynchronously(plugin);
@@ -53,21 +46,17 @@ public class CommandRunner implements CommandExecutor {
 
             } else if(args[0].equalsIgnoreCase("upload") && sender.hasPermission("csn.command.upload")) {
                 if(!plugin.isPluginEnabled()) {
-                    if(plugin.getMessage("database-error") != null) {
-                        sender.sendMessage(plugin.getMessage("database-error"));
-                    }
+                    sender.sendMessage(plugin.getMessage("database-error"));
                     return true;
                 }
 
                 new BatchRunner(plugin).runTaskAsynchronously(plugin);
 
-                sender.sendMessage(ChatColor.RED + "Batch executed!");
+                sender.sendMessage(plugin.getMessage("database-upload"));
 
             } else if(args[0].equalsIgnoreCase("cleandatabase") && sender.hasPermission("csn.command.cleandatabase")) {
                 if(!plugin.isPluginEnabled()) {
-                    if(plugin.getMessage("database-error") != null) {
-                        sender.sendMessage(plugin.getMessage("database-error"));
-                    }
+                    sender.sendMessage(plugin.getMessage("database-error"));
                     return true;
                 }
 
@@ -78,9 +67,7 @@ public class CommandRunner implements CommandExecutor {
                         CleanDatabase.Parameter param = CleanDatabase.Parameter.getFromInput(args[i]);
                         if (param != null) {
                             if (i + 1 + param.getArgs().length > args.length) {
-                                if(plugin.getMessage("missing-arguments") != null) {
-                                    sender.sendMessage(plugin.getMessage("missing-arguments").replace("{usage}", param.getUsage()));
-                                }
+                                sender.sendMessage(plugin.getMessage("missing-arguments", "usage", param.getUsage()));
                                 return true;
                             }
                             switch (param) {
@@ -89,9 +76,7 @@ public class CommandRunner implements CommandExecutor {
                                         int days = Integer.parseInt(args[i + 1]);
                                         cleaner.cleanBefore(days);
                                     } catch (NumberFormatException e) {
-                                        if(plugin.getMessage("invalid-number") != null) {
-                                            sender.sendMessage(plugin.getMessage("invalid-number").replace("{typo}", args[i + 1]).replace("{usage}", param.getUsage()));
-                                        }
+                                        sender.sendMessage(plugin.getMessage("invalid-number", "typo", args[i + 1]).replace("{usage}", param.getUsage()));
                                         return true;
                                     }
                                     break;
@@ -105,9 +90,7 @@ public class CommandRunner implements CommandExecutor {
                                     if (userId != null) {
                                         cleaner.cleanUser(userId);
                                     } else {
-                                        if(plugin.getMessage("invalid-username") != null) {
-                                            sender.sendMessage(plugin.getMessage("invalid-username").replace("{typo}", args[i + 1]).replace("{usage}", param.getUsage()));
-                                        }
+                                        sender.sendMessage(plugin.getMessage("invalid-username", "typo", args[i + 1]).replace("{usage}", param.getUsage())); //should work?
                                     }
                                     break;
                                 case READ_ONLY:
@@ -133,9 +116,7 @@ public class CommandRunner implements CommandExecutor {
             } else if(args[0].equalsIgnoreCase("history") && sender.hasPermission("csn.command.history")) {
 
                 if(!plugin.isPluginEnabled()) {
-                    if(plugin.getMessage("database-error") != null) {
-                        sender.sendMessage(plugin.getMessage("database-error"));
-                    }
+                    sender.sendMessage(plugin.getMessage("database-error"));
                     return true;
                 }
 
@@ -157,9 +138,7 @@ public class CommandRunner implements CommandExecutor {
                                 if (target != null) {
                                     userId = target.getUniqueId();
                                 } else {
-                                    if(plugin.getMessage("user-not-found") != null) {
-                                        sender.sendMessage(plugin.getMessage("user-not-found").replace("{player}", args[1]));
-                                    }
+                                    sender.sendMessage(plugin.getMessage("user-not-found", "player", args[1]));
                                     return true;
                                 }
                             }
@@ -167,16 +146,12 @@ public class CommandRunner implements CommandExecutor {
                                 try {
                                     page = Integer.parseInt(args[2]);
                                 } catch (NumberFormatException e2) {
-                                    if(plugin.getMessage("page-not-found-other") != null) {
-                                        sender.sendMessage(plugin.getMessage("page-not-found-other").replace("{page}", args[2]));
-                                    }
+                                    sender.sendMessage(plugin.getMessage("page-not-found-other", "page", args[2]));
                                     return true;
                                 }
                             }
                         } else {
-                            if(plugin.getMessage("page-not-found") != null) {
-                                sender.sendMessage(plugin.getMessage("page-not-found").replace("{page}", args[1]));
-                            }
+                            sender.sendMessage(plugin.getMessage("page-not-found", "page", args[1]));
                             return true;
                         }
                     }
@@ -192,9 +167,7 @@ public class CommandRunner implements CommandExecutor {
 
             } else if(args[0].equalsIgnoreCase("clear") && sender.hasPermission("csn.command.clear")) {
                 if(!plugin.isPluginEnabled()) {
-                    if(plugin.getMessage("database-error") != null) {
-                        sender.sendMessage(plugin.getMessage("database-error"));
-                    }
+                    sender.sendMessage(plugin.getMessage("database-error"));
                     return true;
                 }
 
@@ -204,9 +177,7 @@ public class CommandRunner implements CommandExecutor {
             }
         }
 
-        if(plugin.getMessage("unrecognized-command") != null) {
-            sender.sendMessage(plugin.getMessage("unrecognized-command"));
-        }
+        sender.sendMessage(plugin.getMessage("unrecognized-command"));
         return true;
     }
 }
