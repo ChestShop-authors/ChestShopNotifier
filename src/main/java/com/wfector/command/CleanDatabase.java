@@ -2,7 +2,6 @@ package com.wfector.command;
 
 import com.wfector.notifier.ChestShopNotifier;
 import com.wfector.util.Time;
-import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -50,11 +49,9 @@ public class CleanDatabase extends BukkitRunnable {
             }
             statement.executeUpdate("DELETE FROM csnUUID" + whereStr + ";");
 
-            sender.sendMessage(ChatColor.RED + "Cleaned database from " + (readOnly ? "read" : "all") + " entries!");
+            sender.sendMessage(plugin.getMessage("database-cleaned", "amount", (readOnly ? "read" : "all")));
         } catch (SQLException e) {
-            if(plugin.getMessage("database-error-oncommand") != null) {
-                sender.sendMessage(plugin.getMessage("database-error-oncommand"));
-            }
+            sender.sendMessage(plugin.getMessage("database-error-oncommand"));
             e.printStackTrace();
         } finally {
             ChestShopNotifier.close(c);
