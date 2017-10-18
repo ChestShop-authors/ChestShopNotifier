@@ -1,5 +1,5 @@
 # Chest Shop Notifier
-# Config file for 1.3
+# Config file for 1.2
 
 logging:
   admin-shop: true
@@ -46,9 +46,13 @@ messages:
   user-not-found: "&cThe user '{player}' was not found."
   page-not-found: "&e{page} &cis not a valid page number input for /csn history <page>!"
   page-not-found-other: "&e{page} &cis not a valid page number input for /csn history <user> <page>!"
-  database-convert: "&cAttempting to convert database..."
   database-error: "&cInvalid database connection. Please edit config and /csn reload."
   database-error-oncommand: "&cDatabase error while executing this command!"
+  database-cleaned: "&cCleaned database from {amount} entries!"
+  database-uploaded: "&cBatch executed!"
+  database-convert: "&cAttempting to convert database..."
+  database-convert-fail: "&cError while trying to convert! Maybe you don't have a 'csn' table?"
+  database-converted: "&cDatabase converted!"
   unrecognized-command: "&cCommand not recognized. Type /csn help for help."
   missing-arguments: "&cMissing parameter arguments: {usage}"
   invalid-number: "&c{typo} is not a valid number input for {usage}!"
@@ -68,3 +72,4 @@ messages:
     upload: "&7 /csn &cupload &f- Force update databases"
     convert: "&7 /csn &cconvert &f- Convert database to UUIDs"
     reload: "&7 /csn &creload &f- Reload configuration"
+
