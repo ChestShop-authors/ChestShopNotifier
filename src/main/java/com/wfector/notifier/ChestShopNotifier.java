@@ -115,14 +115,22 @@ public class ChestShopNotifier extends JavaPlugin implements Listener {
                 if(pluginEnabled) {
                     getLogger().log(Level.INFO, "Database connected!");
                     if (sender != null) {
-                        sender.sendMessage(ChatColor.LIGHT_PURPLE + "ChestShop Notifier // " + ChatColor.GREEN + "Reloaded!");
-                        sender.sendMessage(ChatColor.LIGHT_PURPLE + "ChestShop Notifier // " + ChatColor.GREEN + "Database connected!");
+                        if(getMessage("reload-success") != null) {
+                            sender.sendMessage(getMessage("reload-success"));
+                        }
+                        if(getMessage("reload-database-success") != null) {
+                            sender.sendMessage(getMessage("reload-database-success"));
+                        }
                     }
                 } else {
                     getLogger().log(Level.WARNING, "Failed to connect to the database! Disabling connections!");
                     if (sender != null) {
-                        sender.sendMessage(ChatColor.LIGHT_PURPLE + "ChestShop Notifier // " + ChatColor.GREEN + "Reloaded!");
-                        sender.sendMessage(ChatColor.LIGHT_PURPLE + "ChestShop Notifier // " + ChatColor.RED + "Database failed to connect!");
+                        if(getMessage("reload-success") != null) {
+                            sender.sendMessage(getMessage("reload-success"));
+                        }
+                        if(getMessage("reload-database-fail") != null) {
+                            sender.sendMessage(getMessage("reload-database-fail"));
+                        }
                     }
                 }
             }
