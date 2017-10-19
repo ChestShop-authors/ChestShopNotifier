@@ -138,43 +138,6 @@ public class ChestShopNotifier extends JavaPlugin implements Listener {
             }
         }
     }
-
-    public static String replaceChatColors(String input) {
-        if (input == null) {
-            return null;
-        }
-//        for (int i = 0; i < ChatColor.values().length; i++) {
-//            // the enum contains no element called "ChatColor.OBFUSCATED",
-//            // but ChatColor.values()[] does !?
-//            if (!ChatColor.values()[i].name()
-//                    .equalsIgnoreCase("obfuscated")) {
-//                String replace = "&"
-//                        + ChatColor.values()[i].getChar();
-//                input = input.replace(
-//                        replace,
-//                        ChatColor.valueOf(
-//                                ChatColor.values()[i].name().toUpperCase())
-//                                .toString());
-//            }
-//        }
-//        return input;
-        return ChatColor.translateAlternateColorCodes('&', input);
-    }
-
-    /**
-     * Gets a message from the config file.
-     * @param key The name of the message to get
-     * @return The message or null if it doesn't exist
-     */
-    public String getMessage(String key) {
-        String s = getConfig().getString("messages." + key);
-        if (s != null && !s.isEmpty()) {
-            return ChestShopNotifier.replaceChatColors(s);
-        } else {
-            return "Missing string 'messages." + key + "' in config.yml";
-        }
-    }
-
     /**
      * returns a texty string
      *
@@ -186,9 +149,11 @@ public class ChestShopNotifier extends JavaPlugin implements Listener {
         String s = getConfig().getString("messages." + key);
         if (s != null && !s.isEmpty()) {
             for (int i = 0; i < replacements.length; i++) {
-                s = s.replace("{" + i + "}", replacements[i]);
+                if (i + 1 < replacements.length) {
+                    s = s.replace("{" + i + "}", replacements[i + 1]);
+                }
             }
-            return ChestShopNotifier.replaceChatColors(s);
+            return ChatColor.translateAlternateColorCodes('&', s);
         } else {
             return "Missing string 'messages." + key + "' in config.yml";
         }
