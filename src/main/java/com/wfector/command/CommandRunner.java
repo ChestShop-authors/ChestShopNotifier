@@ -134,7 +134,7 @@ public class CommandRunner implements CommandExecutor {
                             if (userId == null) {
                                 OfflinePlayer target = plugin.getServer().getPlayer(args[1]);
                                 if (target == null) {
-                                    target = plugin.getServer().getOfflinePlayer(NameManager.getUUID(args[1]));
+                                    target = plugin.getServer().getOfflinePlayer(args[1]);
                                 }
                                 if (target != null) {
                                     userId = target.getUniqueId();
