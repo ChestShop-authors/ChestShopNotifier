@@ -16,6 +16,7 @@ import com.wfector.notifier.ChestShopNotifier;
 
 public class CommandRunner implements CommandExecutor {
     private final ChestShopNotifier plugin;
+    private Help Help;
 
     public CommandRunner(ChestShopNotifier plugin) {
         this.plugin = plugin;
