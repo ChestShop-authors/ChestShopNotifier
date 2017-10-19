@@ -24,7 +24,7 @@ public class CommandRunner implements CommandExecutor {
 
     public boolean onCommand(final CommandSender sender, Command cmd, String label, String[] args) {
         if(args.length == 0) {
-            Help.SendDialog(sender);
+            new Help(plugin).SendDialog(sender);
             return true;
         } else {
             if(args[0].equalsIgnoreCase("reload") && (sender.hasPermission("csn.command.reload"))) {
