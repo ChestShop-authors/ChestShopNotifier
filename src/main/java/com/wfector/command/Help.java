@@ -6,13 +6,13 @@ import com.wfector.notifier.ChestShopNotifier;
 import org.bukkit.command.CommandSender;
 
 public class Help {
-    private static ChestShopNotifier plugin;
+    private final ChestShopNotifier plugin;
 
     public Help(ChestShopNotifier main) {
         plugin = main;
     }
 
-    public static void SendDialog(CommandSender sender) {
+    public void SendDialog(CommandSender sender) {
 
         ArrayList<String> helpItems = new ArrayList<String>();
         helpItems.add(plugin.getMessage("help.header"));
