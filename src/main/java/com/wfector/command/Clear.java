@@ -8,7 +8,6 @@ import java.util.UUID;
 import com.Acrobot.ChestShop.Configuration.Properties;
 import com.Acrobot.ChestShop.UUIDs.NameManager;
 import com.wfector.notifier.ChestShopNotifier;
-import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -31,9 +30,9 @@ public class Clear extends BukkitRunnable {
             Statement statement = c.createStatement();
             statement.executeUpdate("DELETE FROM csnUUID WHERE `Unread`='1' AND `ShopOwnerId`='" + senderId.toString() + "'");
 
-            if(plugin.getMessage("history-clear") != null) sender.sendMessage(plugin.getMessage("history-clear"));
+            sender.sendMessage(plugin.getMessage("history-clear"));
         } catch (SQLException e) {
-            sender.sendMessage(ChatColor.RED + "Database error while executing this command!");
+            sender.sendMessage(plugin.getMessage("database-error-oncommand"));
             e.printStackTrace();
         } finally {
             ChestShopNotifier.close(c);

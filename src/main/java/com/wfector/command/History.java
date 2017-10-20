@@ -72,9 +72,8 @@ public class History extends BukkitRunnable {
             if (markRead) {
                 Statement readStatement = c.createStatement();
                 int rowsUpdated = readStatement.executeUpdate("UPDATE csnUUID SET `Unread`='1' WHERE `ShopOwnerId`='" + userId.toString() + "'");
-
-                if (rowsUpdated > 0 && plugin.getMessage("history-marked-read") != null)
-                    sender.sendMessage(plugin.getMessage("history-marked-read"));
+                if (rowsUpdated > 0)
+                sender.sendMessage(plugin.getMessage("history-marked-read"));
             }
 
         } catch (SQLException e) {
@@ -97,18 +96,16 @@ public class History extends BukkitRunnable {
 
     private void showResults() {
         boolean other = !(sender instanceof Player) || !((Player) sender).getUniqueId().equals(userId);
-        if(plugin.getMessage("history-caption") != null) {
-            String message = plugin.getMessage("history-caption");
-            if (other) {
-                String userName = NameManager.getUsername(userId);
-                message += ChatColor.GRAY + " (" + (userName != null ? userName : userId) + ")";
-            }
-            sender.sendMessage(message);
+        String message = plugin.getMessage("history-caption");
+        if (other) {
+            String userName = NameManager.getUsername(userId);
+            message += ChatColor.GRAY + " (" + (userName != null ? userName : userId) + ")";
         }
+        sender.sendMessage(message);
         sender.sendMessage("");
 
         if(historyEntries.isEmpty()) {
-            if(plugin.getMessage("history-empty") != null) sender.sendMessage(plugin.getMessage("history-empty"));
+            sender.sendMessage(plugin.getMessage("history-empty"));
             return;
         }
 
@@ -133,14 +130,14 @@ public class History extends BukkitRunnable {
         }
 
         sender.sendMessage(" ");
-        if (maxPages > 1 && plugin.getMessage("history-footer-page") != null) {
+        if (maxPages > 1) {
             sender.sendMessage(
                     plugin.getMessage("history-footer-page")
                             .replace("{current}", String.valueOf(page))
                             .replace("{pages}", String.valueOf(maxPages))
             );
         }
-        if (!other && sender.hasPermission("csn.command.clear") && plugin.getMessage("history-footer-clear") != null) {
+        if (!other && sender.hasPermission("csn.command.clear")) {
             sender.sendMessage(plugin.getMessage("history-footer-clear"));
         }
 

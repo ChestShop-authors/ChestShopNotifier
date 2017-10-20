@@ -115,14 +115,14 @@ public class ChestShopNotifier extends JavaPlugin implements Listener {
                 if(pluginEnabled) {
                     getLogger().log(Level.INFO, "Database connected!");
                     if (sender != null) {
-                        sender.sendMessage(ChatColor.LIGHT_PURPLE + "ChestShop Notifier // " + ChatColor.GREEN + "Reloaded!");
-                        sender.sendMessage(ChatColor.LIGHT_PURPLE + "ChestShop Notifier // " + ChatColor.GREEN + "Database connected!");
+                        sender.sendMessage(getMessage("reload-success"));
+                        sender.sendMessage(getMessage("reload-database-success"));
                     }
                 } else {
                     getLogger().log(Level.WARNING, "Failed to connect to the database! Disabling connections!");
                     if (sender != null) {
-                        sender.sendMessage(ChatColor.LIGHT_PURPLE + "ChestShop Notifier // " + ChatColor.GREEN + "Reloaded!");
-                        sender.sendMessage(ChatColor.LIGHT_PURPLE + "ChestShop Notifier // " + ChatColor.RED + "Database failed to connect!");
+                        sender.sendMessage(getMessage("reload-success"));
+                        sender.sendMessage(getMessage("reload-database-fail"));
                     }
                 }
             }
@@ -138,14 +138,25 @@ public class ChestShopNotifier extends JavaPlugin implements Listener {
             }
         }
     }
-
     /**
-     * Gets a message from the config file.
-     * @param string The name of the message to get
-     * @return The message or null if it doesn't exist
+     * returns a texty string
+     *
+     * @param key the config path
+     * @param replacements Optional replacements. Use {index} in the message to address them.
+     * @return the text
      */
-    public String getMessage(String string) {
-        return (getConfig().contains("messages." + string)) ? ChatColor.translateAlternateColorCodes('&', getConfig().getString("messages." + string)) : null;
+    public String getMessage(String key, String... replacements) {
+        String s = getConfig().getString("messages." + key);
+        if (s != null && !s.isEmpty()) {
+            for (int i = 0; i < replacements.length; i++) {
+                if (i + 1 < replacements.length) {
+                    s = s.replace("{" + i + "}", replacements[i + 1]);
+                }
+            }
+            return ChatColor.translateAlternateColorCodes('&', s);
+        } else {
+            return "Missing string 'messages." + key + "' in config.yml";
+        }
     }
 
     @EventHandler

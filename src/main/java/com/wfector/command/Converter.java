@@ -10,7 +10,6 @@ import java.util.UUID;
 import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 
 import com.wfector.notifier.ChestShopNotifier;
@@ -31,10 +30,10 @@ public class Converter extends BukkitRunnable {
 
     public void run() {
         if (convertDatabase()) {
-            sender.sendMessage(ChatColor.RED + "Database converted!");
+            sender.sendMessage(plugin.getMessage("database-converted"));
             plugin.getLogger().log(Level.INFO, "Database converted!");
         } else {
-            sender.sendMessage(ChatColor.RED + "Error while trying to convert! Maybe you don't have a 'csn' table?");
+            sender.sendMessage(plugin.getMessage("database-convert-fail"));
             plugin.getLogger().log(Level.SEVERE, "Error while trying to convert! Maybe you don't have a 'csn' table?");
         }
     }
