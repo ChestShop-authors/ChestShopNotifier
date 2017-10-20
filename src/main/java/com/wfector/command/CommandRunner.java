@@ -16,7 +16,6 @@ import com.wfector.notifier.ChestShopNotifier;
 
 public class CommandRunner implements CommandExecutor {
     private final ChestShopNotifier plugin;
-    private Help Help;
 
     public CommandRunner(ChestShopNotifier plugin) {
         this.plugin = plugin;
@@ -111,7 +110,7 @@ public class CommandRunner implements CommandExecutor {
                 return true;
 
             } else if(args[0].equalsIgnoreCase("help") && sender.hasPermission("csn.command")) {
-                Help.SendDialog(sender);
+                new Help(plugin).SendDialog(sender);
                 return true;
 
             } else if(args[0].equalsIgnoreCase("history") && sender.hasPermission("csn.command.history")) {
