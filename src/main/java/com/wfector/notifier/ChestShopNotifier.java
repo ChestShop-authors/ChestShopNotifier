@@ -150,7 +150,7 @@ public class ChestShopNotifier extends JavaPlugin implements Listener {
         if (s != null && !s.isEmpty()) {
             for (int i = 0; i < replacements.length; i++) {
                 if (i + 1 < replacements.length) {
-                    s = s.replace("{" + i + "}", replacements[i + 1]);
+                    s = s.replace("{" + replacements[i] + "}", replacements[i + 1]);
                 }
             }
             return ChatColor.translateAlternateColorCodes('&', s);

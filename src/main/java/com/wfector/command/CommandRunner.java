@@ -76,7 +76,9 @@ public class CommandRunner implements CommandExecutor {
                                         int days = Integer.parseInt(args[i + 1]);
                                         cleaner.cleanBefore(days);
                                     } catch (NumberFormatException e) {
-                                        sender.sendMessage(plugin.getMessage("invalid-number", "typo", args[i + 1]).replace("{usage}", param.getUsage()));
+                                        sender.sendMessage(plugin.getMessage("invalid-number",
+                                                "typo", args[i + 1],
+                                                "usage", param.getUsage()));
                                         return true;
                                     }
                                     break;
@@ -90,7 +92,9 @@ public class CommandRunner implements CommandExecutor {
                                     if (userId != null) {
                                         cleaner.cleanUser(userId);
                                     } else {
-                                        sender.sendMessage(plugin.getMessage("invalid-username", "typo", args[i + 1]).replace("{usage}", param.getUsage())); //should work?
+                                        sender.sendMessage(plugin.getMessage("invalid-username",
+                                                "typo", args[i + 1],
+                                                "usage", param.getUsage()));
                                     }
                                     break;
                                 case READ_ONLY:

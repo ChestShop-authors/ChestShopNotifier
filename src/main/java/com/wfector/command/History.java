@@ -116,15 +116,14 @@ public class History extends BukkitRunnable {
 
         for(int i = maxRows * (page - 1); i < historyEntries.size() && i < maxRows * page; i++) {
             HistoryEntry entry = historyEntries.get(i);
-            String msgString = plugin.getMessage("history-" + (entry.getType() == TransactionType.BUY ? "bought" : "sold") + (entry.isUnread() ? "" : "-read"));
-
             String playerName = NameManager.getUsername(entry.getCustomerId());
-
-            msgString = msgString.replace("{player}", playerName != null ? playerName : "unknown");
-            msgString = msgString.replace("{count}", String.valueOf(entry.getQuantity()));
-            msgString = msgString.replace("{item}", entry.getItemId().replace(" ", ""));
-            msgString = msgString.replace("{timeago}", Time.getAgo(entry.getTime()));
-            msgString = msgString.replace("{money}", Economy.formatBalance(entry.getPrice() * entry.getQuantity()));
+            String msgString = plugin.getMessage("history-" + (entry.getType() == TransactionType.BUY ? "bought" : "sold") + (entry.isUnread() ? "" : "-read"),
+                    "player", playerName != null ? playerName : "unknown",
+                    "count", String.valueOf(entry.getQuantity()),
+                    "item", entry.getItemId().replace(" ", ""),
+                    "timeago", Time.getAgo(entry.getTime()),
+                    "money", Economy.formatBalance(entry.getPrice() * entry.getQuantity())
+            );
 
             sender.sendMessage(msgString);
         }
@@ -132,9 +131,9 @@ public class History extends BukkitRunnable {
         sender.sendMessage(" ");
         if (maxPages > 1) {
             sender.sendMessage(
-                    plugin.getMessage("history-footer-page")
-                            .replace("{current}", String.valueOf(page))
-                            .replace("{pages}", String.valueOf(maxPages))
+                    plugin.getMessage("history-footer-page",
+                            "current", String.valueOf(page),
+                            "pages", String.valueOf(maxPages))
             );
         }
         if (!other && sender.hasPermission("csn.command.clear")) {
