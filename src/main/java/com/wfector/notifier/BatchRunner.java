@@ -22,9 +22,7 @@ public class BatchRunner extends BukkitRunnable {
 
         if(plugin.getBatch().size() > 0) {
 
-            Connection conn = null;
-            try {
-                conn = plugin.getConnection();
+            try (Connection conn = plugin.getConnection()){
                 conn.setAutoCommit(false);
                 String qstr = "INSERT INTO csnUUID (`ShopOwnerId`, `CustomerId`, `ItemId`, `Mode`, `Amount`, `Time`, `Quantity`, `Unread`) VALUES (?,?,?,?,?,?,?,?)";
 
@@ -48,8 +46,6 @@ public class BatchRunner extends BukkitRunnable {
                 plugin.getBatch().clear();
             } catch (SQLException e) {
                 e.printStackTrace();
-            } finally {
-                ChestShopNotifier.close(conn);
             }
         }
 

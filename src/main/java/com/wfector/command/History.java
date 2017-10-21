@@ -47,9 +47,7 @@ public class History extends BukkitRunnable {
     }
 
     private void gatherResults() {
-        Connection c = null;
-        try {
-            c = plugin.getConnection();
+        try (Connection c = plugin.getConnection()){
             Statement statement = c.createStatement();
 
             ResultSet res = statement.executeQuery("SELECT * FROM `csnUUID` WHERE `ShopOwnerId`='" + userId.toString() + "' ORDER BY `Id` DESC LIMIT 1000;");
@@ -78,8 +76,6 @@ public class History extends BukkitRunnable {
 
         } catch (SQLException e) {
             e.printStackTrace();
-        } finally {
-            ChestShopNotifier.close(c);
         }
     }
 

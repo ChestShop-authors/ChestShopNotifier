@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.UUID;
 import java.util.logging.Level;
 
+import com.Acrobot.ChestShop.UUIDs.NameManager;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 
@@ -39,9 +40,8 @@ public class Converter extends BukkitRunnable {
     }
 
     private boolean convertDatabase() {
-        Connection conn = null;
-        try {
-            conn = plugin.getConnection();
+        try (Connection conn = plugin.getConnection()){
+
             Statement sta = conn.createStatement();
             ResultSet res = sta.executeQuery("SELECT * FROM `csn` WHERE `Unread`='0' ORDER BY `Id` ASC");
 
@@ -73,8 +73,6 @@ public class Converter extends BukkitRunnable {
         } catch (SQLException e) {
             e.printStackTrace();
             return false;
-        } finally {
-            ChestShopNotifier.close(conn);
         }
         uuidmap.clear();
         return true;
@@ -86,12 +84,15 @@ public class Converter extends BukkitRunnable {
         if(uuidmap.containsKey(playername.toLowerCase())) {
             playerid = uuidmap.get(playername.toLowerCase());
         } else {
-            OfflinePlayer op = Bukkit.getOfflinePlayer(playername);
-            if(op == null) {
-                plugin.getLogger().log(Level.SEVERE, "Could not get the player " + playername);
-                return null;
+            playerid = NameManager.getUUID(playername);
+            if (playerid == null) {
+                OfflinePlayer op = Bukkit.getOfflinePlayer(playername);
+                if (op == null) {
+                    plugin.getLogger().log(Level.SEVERE, "Could not get the player " + playername);
+                    return null;
+                }
+                playerid = op.getUniqueId();
             }
-            playerid = op.getUniqueId();
             if(playerid == null || playerid.version() != 4) {
                 plugin.getLogger().log(Level.WARNING, "Could not find a player with the username " + playername);
                 return null;

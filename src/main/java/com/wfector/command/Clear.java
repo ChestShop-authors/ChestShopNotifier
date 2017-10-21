@@ -24,9 +24,7 @@ public class Clear extends BukkitRunnable {
 
     public void run() {
         UUID senderId = (sender instanceof Player) ? ((Player) sender).getUniqueId() : NameManager.getUUID(Properties.ADMIN_SHOP_NAME);
-        Connection c = null;
-        try {
-            c = plugin.getConnection();
+        try (Connection c = plugin.getConnection()){
             Statement statement = c.createStatement();
             statement.executeUpdate("DELETE FROM csnUUID WHERE `Unread`='1' AND `ShopOwnerId`='" + senderId.toString() + "'");
 
@@ -34,8 +32,6 @@ public class Clear extends BukkitRunnable {
         } catch (SQLException e) {
             sender.sendMessage(plugin.getMessage("database-error-oncommand"));
             e.printStackTrace();
-        } finally {
-            ChestShopNotifier.close(c);
         }
 
     }

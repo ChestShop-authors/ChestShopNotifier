@@ -26,9 +26,7 @@ public class CleanDatabase extends BukkitRunnable {
     }
 
     public void run() {
-        Connection c = null;
-        try {
-            c = plugin.getConnection();
+        try (Connection c = plugin.getConnection()) {
             Statement statement = c.createStatement();
             List<String> where = new ArrayList<>();
             if (readOnly) {
@@ -53,8 +51,6 @@ public class CleanDatabase extends BukkitRunnable {
         } catch (SQLException e) {
             sender.sendMessage(plugin.getMessage("database-error-oncommand"));
             e.printStackTrace();
-        } finally {
-            ChestShopNotifier.close(c);
         }
 
     }

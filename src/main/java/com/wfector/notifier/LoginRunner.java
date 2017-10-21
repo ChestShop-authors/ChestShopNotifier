@@ -20,14 +20,12 @@ public class LoginRunner extends BukkitRunnable {
 
     @Override
     public void run() {
-        Connection conn = null;
         Player p = plugin.getServer().getPlayer(playerId);
         if(p == null || !p.isOnline()) {
             // player is no longer online
             return;
         }
-        try {
-            conn = plugin.getConnection();
+        try (Connection conn = plugin.getConnection()){
             Statement statement = conn.createStatement();
 
             ResultSet res = statement.executeQuery("SELECT `ShopOwnerId` FROM csnUUID WHERE `ShopOwnerId`='" + playerId.toString() + "' AND `Unread`='0'");
@@ -48,8 +46,6 @@ public class LoginRunner extends BukkitRunnable {
             }
         } catch (SQLException e) {
             e.printStackTrace();
-        } finally {
-            ChestShopNotifier.close(conn);
         }
         plugin.debug("Done.");
     }
