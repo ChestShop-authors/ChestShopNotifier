@@ -87,9 +87,10 @@ public class ChestShopNotifier extends JavaPlugin implements Listener {
         String dbName = getConfig().getString("database.dbname");
         String dbUsername = getConfig().getString("database.username");
         String dbPassword = getConfig().getString("database.password");
+        boolean useSsl = getConfig().getBoolean("database.ssl");
 
         ds = new HikariDataSource();
-        ds.setJdbcUrl("jdbc:mysql://" + dbHost + ":" + dbPort + "/" + dbName);
+        ds.setJdbcUrl("jdbc:mysql://" + dbHost + ":" + dbPort + "/" + dbName + "?useSSL=" + useSsl);
         ds.setUsername(dbUsername);
         ds.setPassword(dbPassword);
         ds.setConnectionTimeout(5000);

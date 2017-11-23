@@ -20,6 +20,7 @@ database:
   dbname: 'database1'
   username: 'dbadmin'
   password: '123456'
+  ssl: false
 
 clean-on-startup:
   enabled: false
