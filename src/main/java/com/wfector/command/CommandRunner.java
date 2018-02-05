@@ -129,35 +129,39 @@ public class CommandRunner implements CommandExecutor {
                 UUID userId = (sender instanceof Player) ? ((Player) sender).getUniqueId() : NameManager.getUUID(Properties.ADMIN_SHOP_NAME);
                 int page = 1;
                 if(args.length > 1) {
+                    boolean hasPage = false;
                     try {
-                        page = Integer.parseInt(args[1]);
+                        page = Integer.parseInt(args[args.length - 1]);
+                        hasPage = true;
                     } catch (NumberFormatException e1) {
-                        if(sender.hasPermission("csn.command.history.others")) {
-                            userId = NameManager.getUUID(args[1]);
-                            if (userId == null) {
-                                OfflinePlayer target = plugin.getServer().getPlayer(args[1]);
-                                if (target == null) {
-                                    target = plugin.getServer().getOfflinePlayer(args[1]);
-                                }
-                                if (target != null) {
-                                    userId = target.getUniqueId();
-                                } else {
-                                    sender.sendMessage(plugin.getMessage("user-not-found", "player", args[1]));
-                                    return true;
-                                }
-                            }
-                            if (args.length > 2) {
-                                try {
-                                    page = Integer.parseInt(args[2]);
-                                } catch (NumberFormatException e2) {
-                                    sender.sendMessage(plugin.getMessage("page-not-found-other", "page", args[2]));
-                                    return true;
-                                }
-                            }
-                        } else {
-                            sender.sendMessage(plugin.getMessage("page-not-found", "page", args[1]));
+                        if (args.length == 2) {
+                            sender.sendMessage(plugin.getMessage("page-not-found", "page", args[args.length - 1]));
                             return true;
                         }
+                    }
+                    
+                    if ((args.length > 3 || args.length > 2 && !hasPage) && sender.hasPermission("csn.command.history.others")) {
+                        StringBuilder userNameBuilder = new StringBuilder(args[1]);
+                        for (int i = 2; i < args.length - (hasPage ? 1 : 0); i++) {
+                            userNameBuilder.append(" ").append(args[i]);
+                        }
+                        String userName = userNameBuilder.toString();
+                        userId = NameManager.getUUID(userName);
+                        if (userId == null) {
+                            OfflinePlayer target = plugin.getServer().getPlayer(userName);
+                            if (target == null) {
+                                target = plugin.getServer().getOfflinePlayer(userName);
+                            }
+                            if (target != null) {
+                                userId = target.getUniqueId();
+                            } else {
+                                sender.sendMessage(plugin.getMessage("user-not-found", "player", userName));
+                                return true;
+                            }
+                        }
+                    } else {
+                        sender.sendMessage(plugin.getMessage("page-not-found", "page", args[args.length - 1]));
+                        return true;
                     }
 
                     markRead = false;
