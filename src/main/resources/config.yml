@@ -58,6 +58,7 @@ messages:
   missing-arguments: "&cMissing parameter arguments: {usage}"
   invalid-number: "&c{typo} is not a valid number input for {usage}!"
   invalid-username: "&c{typo} is not a valid username/uuid input for {usage}!"
+  missing-permission: "&cYou don't have the permission {permission}!"
   help:
     header: "&dChestShop Notifier // &7Commands"
     help: "&7 /csn &dhelp &f- Plugin usage & commands"

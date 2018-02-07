@@ -133,14 +133,13 @@ public class CommandRunner implements CommandExecutor {
                     try {
                         page = Integer.parseInt(args[args.length - 1]);
                         hasPage = true;
-                    } catch (NumberFormatException e1) {
-                        if (args.length == 2) {
-                            sender.sendMessage(plugin.getMessage("page-not-found", "page", args[args.length - 1]));
+                    } catch (NumberFormatException ignored) {}
+                    
+                    if (args.length > 2 || !hasPage) {
+                        if (!sender.hasPermission("csn.command.history.others")) {
+                            sender.sendMessage(plugin.getMessage("missing-permission", "permission", "csn.command.history.others"));
                             return true;
                         }
-                    }
-                    
-                    if ((args.length > 3 || args.length > 2 && !hasPage) && sender.hasPermission("csn.command.history.others")) {
                         StringBuilder userNameBuilder = new StringBuilder(args[1]);
                         for (int i = 2; i < args.length - (hasPage ? 1 : 0); i++) {
                             userNameBuilder.append(" ").append(args[i]);
