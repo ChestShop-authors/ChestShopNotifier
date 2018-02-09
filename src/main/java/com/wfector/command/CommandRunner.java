@@ -136,7 +136,7 @@ public class CommandRunner implements CommandExecutor {
                         hasPage = true;
                     } catch (NumberFormatException ignored) {}
                     
-                    if (args.length > 2 || !hasPage) {
+                    if (args.length > 2 || (!hasPage && sender.hasPermission("csn.command.history.others"))) {
                         if (!sender.hasPermission("csn.command.history.others")) {
                             sender.sendMessage(plugin.getMessage("missing-permission", "permission", "csn.command.history.others"));
                             return true;
@@ -156,6 +156,7 @@ public class CommandRunner implements CommandExecutor {
                             sender.sendMessage(plugin.getMessage("user-not-found", "player", userName));
                             return true;
                         }
+                        hasPage = true;
                     }
                     if (!hasPage) {
                         sender.sendMessage(plugin.getMessage("page-not-found", "page", args[args.length - 1]));
