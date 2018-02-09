@@ -27,6 +27,7 @@ public class CommandRunner implements CommandExecutor {
             return true;
         } else {
             if(args[0].equalsIgnoreCase("reload") && (sender.hasPermission("csn.command.reload"))) {
+                plugin.reloadConfig();
                 plugin.updateConfiguration(sender);
                 sender.sendMessage(plugin.getMessage("reload-cmd"));
                 return true;
@@ -145,20 +146,18 @@ public class CommandRunner implements CommandExecutor {
                             userNameBuilder.append(" ").append(args[i]);
                         }
                         String userName = userNameBuilder.toString();
-                        userId = NameManager.getUUID(userName);
-                        if (userId == null) {
-                            OfflinePlayer target = plugin.getServer().getPlayer(userName);
-                            if (target == null) {
-                                target = plugin.getServer().getOfflinePlayer(userName);
-                            }
-                            if (target != null) {
-                                userId = target.getUniqueId();
-                            } else {
-                                sender.sendMessage(plugin.getMessage("user-not-found", "player", userName));
-                                return true;
-                            }
+                        Player target = plugin.getServer().getPlayer(userName);
+                        if (target != null) {
+                            userId = target.getUniqueId();
+                        } else {
+                            userId = NameManager.getUUID(userName);
                         }
-                    } else {
+                        if (userId == null) {
+                            sender.sendMessage(plugin.getMessage("user-not-found", "player", userName));
+                            return true;
+                        }
+                    }
+                    if (!hasPage) {
                         sender.sendMessage(plugin.getMessage("page-not-found", "page", args[args.length - 1]));
                         return true;
                     }
