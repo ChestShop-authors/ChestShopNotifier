@@ -30,8 +30,6 @@ public class LoginRunner extends BukkitRunnable {
 
             ResultSet res = statement.executeQuery("SELECT `ShopOwnerId` FROM csnUUID WHERE `ShopOwnerId`='" + playerId.toString() + "' AND `Unread`='0'");
 
-            res.next();
-
             int amount = 0;
             if (res.getMetaData().getColumnCount() > 0)
                 while (res.next())
