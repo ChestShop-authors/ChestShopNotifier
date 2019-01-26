@@ -14,6 +14,7 @@ history:
 debugging:
   verbose: true
 
+# MySQL
 database:
   host: 'localhost'
   port: 3306
@@ -21,6 +22,10 @@ database:
   username: 'dbadmin'
   password: '123456'
   ssl: false
+# SQLite
+database:
+  type: sqlite
+  #dbname: database.sqlite
 
 clean-on-startup:
   enabled: false

@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.logging.Level;
+import java.io.File;
 
 import com.zaxxer.hikari.HikariDataSource;
 import org.bukkit.ChatColor;
@@ -82,6 +83,7 @@ public class ChestShopNotifier extends JavaPlugin implements Listener {
         joinNotificationDelay = getConfig().getInt("notifications.delay-seconds");
         logAdminShop = getConfig().getBoolean("logging.admin-shop");
 
+        String dbType = getConfig().getString("database.type","mysql");
         String dbHost = getConfig().getString("database.host");
         int dbPort = getConfig().getInt("database.port");
         String dbName = getConfig().getString("database.dbname");
@@ -90,7 +92,17 @@ public class ChestShopNotifier extends JavaPlugin implements Listener {
         boolean useSsl = getConfig().getBoolean("database.ssl");
 
         ds = new HikariDataSource();
-        ds.setJdbcUrl("jdbc:mysql://" + dbHost + ":" + dbPort + "/" + dbName + "?useSSL=" + useSsl);
+        if(dbType.equals("sqlite")) {
+            if(dbName == null || dbName.isEmpty()) {
+                dbName = "database.sqlite";
+            }
+            if(!new File(dbName).isAbsolute()) {
+                dbName = new File(getDataFolder(), dbName).toString();
+            }
+            ds.setJdbcUrl("jdbc:sqlite:"+dbName);
+        } else {
+            ds.setJdbcUrl("jdbc:" + dbType + "://" + dbHost + ":" + dbPort + "/" + dbName + "?useSSL=" + useSsl);
+        }
         ds.setUsername(dbUsername);
         ds.setPassword(dbPassword);
         ds.setConnectionTimeout(5000);
@@ -102,7 +114,11 @@ public class ChestShopNotifier extends JavaPlugin implements Listener {
                 try (Connection c = getConnection()){
                     Statement statement = c.createStatement();
 
-                    statement.executeUpdate("CREATE TABLE IF NOT EXISTS csnUUID (Id int(11) AUTO_INCREMENT, ShopOwnerId VARCHAR(36), CustomerId VARCHAR(36), ItemId VARCHAR(1000), Mode INT(11), Amount FLOAT(53), Quantity INT(11), Time INT(11), Unread INT(11), PRIMARY KEY (Id))");
+                    if(dbType.equals("sqlite")) {
+                        statement.executeUpdate("CREATE TABLE IF NOT EXISTS csnUUID (Id INTEGER PRIMARY KEY AUTOINCREMENT, ShopOwnerId VARCHAR(36), CustomerId VARCHAR(36), ItemId VARCHAR(1000), Mode INT(11), Amount FLOAT(53), Quantity INT(11), Time INT(11), Unread INT(11))");
+                    } else {
+                        statement.executeUpdate("CREATE TABLE IF NOT EXISTS csnUUID (Id int(11) AUTO_INCREMENT, ShopOwnerId VARCHAR(36), CustomerId VARCHAR(36), ItemId VARCHAR(1000), Mode INT(11), Amount FLOAT(53), Quantity INT(11), Time INT(11), Unread INT(11), PRIMARY KEY (Id))");
+                    }
 
                     pluginEnabled = true;
                 } catch (SQLException e) {
