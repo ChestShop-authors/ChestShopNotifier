@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.logging.Level;
+import java.io.File;
 
 import com.zaxxer.hikari.HikariDataSource;
 import org.bukkit.ChatColor;
@@ -32,6 +33,7 @@ import static com.Acrobot.Breeze.Utils.MaterialUtil.getSignName;
 public class ChestShopNotifier extends JavaPlugin implements Listener {
 
     private HikariDataSource ds;
+    private DbType dbType = DbType.SQLITE;
 
     private List<Object[]> batch = new ArrayList<>();
 
@@ -83,15 +85,32 @@ public class ChestShopNotifier extends JavaPlugin implements Listener {
         joinNotificationDelay = getConfig().getInt("notifications.delay-seconds");
         logAdminShop = getConfig().getBoolean("logging.admin-shop");
 
+        String dbType = getConfig().getString("database.type", "mysql");
+        try {
+            this.dbType = DbType.valueOf(dbType.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            this.dbType = DbType.SQLITE;
+            getLogger().log(Level.WARNING, "Unknown dbType setting '" + dbType + "'! Possible settings are MySQL and SQLite. Falling back to SQLite!");
+        }
         String dbHost = getConfig().getString("database.host");
         int dbPort = getConfig().getInt("database.port");
-        String dbName = getConfig().getString("database.dbname");
+        String dbName = getConfig().getString("database.dbname", "database");
         String dbUsername = getConfig().getString("database.username");
         String dbPassword = getConfig().getString("database.password");
         boolean useSsl = getConfig().getBoolean("database.ssl");
 
         ds = new HikariDataSource();
-        ds.setJdbcUrl("jdbc:mysql://" + dbHost + ":" + dbPort + "/" + dbName + "?useSSL=" + useSsl);
+
+        switch (this.dbType) {
+            default:
+                getLogger().log(Level.WARNING, "Unsupported database type setting '" + this.dbType + "'! Falling back to SQLite!");
+            case SQLITE:
+                ds.setJdbcUrl("jdbc:sqlite:" + new File(getDataFolder(), dbName + ".sqlite"));
+                break;
+            case MYSQL:
+                ds.setJdbcUrl("jdbc:" + dbType + "://" + dbHost + ":" + dbPort + "/" + dbName + "?useSSL=" + useSsl);
+                break;
+        }
         ds.setUsername(dbUsername);
         ds.setPassword(dbPassword);
         ds.setConnectionTimeout(5000);
@@ -103,7 +122,15 @@ public class ChestShopNotifier extends JavaPlugin implements Listener {
                 try (Connection c = getConnection()){
                     Statement statement = c.createStatement();
 
-                    statement.executeUpdate("CREATE TABLE IF NOT EXISTS csnUUID (Id int(11) AUTO_INCREMENT, ShopOwnerId VARCHAR(36), CustomerId VARCHAR(36), ItemId VARCHAR(1000), Mode INT(11), Amount FLOAT(53), Quantity INT(11), Time INT(11), Unread INT(11), PRIMARY KEY (Id))");
+                    switch (ChestShopNotifier.this.dbType) {
+                        default:
+                        case SQLITE:
+                            statement.executeUpdate("CREATE TABLE IF NOT EXISTS csnUUID (Id INTEGER PRIMARY KEY AUTOINCREMENT, ShopOwnerId VARCHAR(36), CustomerId VARCHAR(36), ItemId VARCHAR(1000), Mode INT(11), Amount FLOAT(53), Quantity INT(11), Time INT(11), Unread INT(11))");
+                            break;
+                        case MYSQL:
+                            statement.executeUpdate("CREATE TABLE IF NOT EXISTS csnUUID (Id int(11) AUTO_INCREMENT, ShopOwnerId VARCHAR(36), CustomerId VARCHAR(36), ItemId VARCHAR(1000), Mode INT(11), Amount FLOAT(53), Quantity INT(11), Time INT(11), Unread INT(11), PRIMARY KEY (Id))");
+                            break;
+                    }
 
                     pluginEnabled = true;
                 } catch (SQLException e) {
@@ -227,5 +254,10 @@ public class ChestShopNotifier extends JavaPlugin implements Listener {
 
     public List<Object[]> getBatch() {
         return batch;
+    }
+
+    private enum DbType {
+        SQLITE,
+        MYSQL;
     }
 }

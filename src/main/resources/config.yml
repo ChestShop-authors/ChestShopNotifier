@@ -15,9 +15,12 @@ debugging:
   verbose: true
 
 database:
+  # Possible types: SQLite and MySQL
+  type: sqlite
+  dbname: 'database'
+  # MySQL specific settings
   host: 'localhost'
   port: 3306
-  dbname: 'database1'
   username: 'dbadmin'
   password: '123456'
   ssl: false
