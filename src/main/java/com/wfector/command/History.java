@@ -43,7 +43,7 @@ public class History extends BukkitRunnable {
 
     public void run() {
         gatherResults();
-        showResults();
+        plugin.getServer().getScheduler().runTask(plugin, this::showResults);
     }
 
     private void gatherResults() {
@@ -53,8 +53,10 @@ public class History extends BukkitRunnable {
             ResultSet res = statement.executeQuery("SELECT * FROM `csnUUID` WHERE `ShopOwnerId`='" + userId.toString() + "' ORDER BY `Id` DESC LIMIT 1000;");
 
             while (res.next()) {
+                UUID customerId = UUID.fromString(res.getString("CustomerId"));
                 HistoryEntry entry = new HistoryEntry(
-                        UUID.fromString(res.getString("CustomerId")),
+                        customerId,
+                        NameManager.getUsername(customerId),
                         res.getString("ItemId"),
                         res.getDouble("Amount"),
                         res.getInt("Time"),
@@ -112,9 +114,8 @@ public class History extends BukkitRunnable {
 
         for(int i = maxRows * (page - 1); i < historyEntries.size() && i < maxRows * page; i++) {
             HistoryEntry entry = historyEntries.get(i);
-            String playerName = NameManager.getUsername(entry.getCustomerId());
             String msgString = plugin.getMessage("history-" + (entry.getType() == TransactionType.BUY ? "bought" : "sold") + (entry.isUnread() ? "" : "-read"),
-                    "player", playerName != null ? playerName : "unknown",
+                    "player", entry.getCustomerName() != null ? entry.getCustomerName() : "unknown",
                     "count", String.valueOf(entry.getQuantity()),
                     "item", entry.getItemId().replace(" ", ""),
                     "timeago", Time.getAgo(entry.getTime()),
@@ -140,6 +141,7 @@ public class History extends BukkitRunnable {
 
     private class HistoryEntry {
         private final UUID customerId;
+        private final String customerName;
         private final String itemId;
         private double price;
         private int time;
@@ -147,8 +149,9 @@ public class History extends BukkitRunnable {
         private int quantity;
         private final boolean unread;
 
-        public HistoryEntry(UUID customerId, String itemId, double amount, int time, TransactionType type, int quantity, boolean unread) {
+        public HistoryEntry(UUID customerId, String customerName, String itemId, double amount, int time, TransactionType type, int quantity, boolean unread) {
             this.customerId = customerId;
+            this.customerName = customerName;
             this.itemId = itemId;
             this.price = amount / quantity;
             this.time = time;
@@ -159,6 +162,10 @@ public class History extends BukkitRunnable {
 
         public UUID getCustomerId() {
             return customerId;
+        }
+
+        public String getCustomerName() {
+            return customerName;
         }
 
         public String getItemId() {
