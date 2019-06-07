@@ -10,6 +10,7 @@ import java.util.logging.Level;
 
 import com.zaxxer.hikari.HikariDataSource;
 import org.bukkit.ChatColor;
+import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -168,26 +169,34 @@ public class ChestShopNotifier extends JavaPlugin implements Listener {
 
     @EventHandler
     public boolean onChestShopTransaction(TransactionEvent e) {
+        if (e.getStock().length == 0) return true;
+
         UUID ownerId = e.getOwner().getUniqueId();
 
         if(!this.logAdminShop && NameManager.isAdminShop(ownerId)) return true;
 
         TransactionType f = e.getTransactionType();
 
-        Integer mode = (f == TransactionType.BUY) ? 1 : 2;
+        int mode = (f == TransactionType.BUY) ? 1 : 2;
 
         double price = e.getPrice();
         UUID clientId = e.getClient().getUniqueId();
 
-        StringBuilder items = new StringBuilder(50);
+        String itemId = "";
         int itemQuantities = 0;
+        Material itemType = null;
 
         for (ItemStack item : e.getStock()) {
-            items.append(getSignName(item));
-            itemQuantities = item.getAmount();
+            if (itemType == null) {
+                itemType = item.getType();
+                itemId = getSignName(item);
+            }
+            if (item.getType() == itemType) {
+                itemQuantities += item.getAmount();
+            } else {
+                getLogger().log(Level.WARNING, "Transaction event with multiple different item types are not supported in this version of the plugin! Please look for an update. Only logging the first item.");
+            }
         }
-
-        String itemId = items.toString();
 
         batch.add(new Object[] {
                 ownerId.toString(),
