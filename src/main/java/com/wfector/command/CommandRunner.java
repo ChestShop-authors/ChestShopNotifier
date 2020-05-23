@@ -1,20 +1,22 @@
 package com.wfector.command;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 import java.util.logging.Level;
 
 import com.Acrobot.ChestShop.Configuration.Properties;
 import com.Acrobot.ChestShop.UUIDs.NameManager;
 import com.wfector.notifier.BatchRunner;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
 
 import com.wfector.notifier.ChestShopNotifier;
 
-public class CommandRunner implements CommandExecutor {
+public class CommandRunner implements TabExecutor {
     private final ChestShopNotifier plugin;
 
     public CommandRunner(ChestShopNotifier plugin) {
@@ -186,5 +188,19 @@ public class CommandRunner implements CommandExecutor {
 
         sender.sendMessage(plugin.getMessage("unrecognized-command"));
         return true;
+    }
+
+    @Override
+    public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
+        if (args.length == 0) {
+            return Arrays.asList("history", "read", "clear");
+        } else if (args.length == 1) {
+            for (String s : new String[]{"history", "read", "clear"}) {
+                if (s.toLowerCase().startsWith(args[0].toLowerCase()) && s.length() > args[0].length()) {
+                    return Collections.singletonList(s);
+                }
+            }
+        }
+        return Collections.emptyList();
     }
 }
