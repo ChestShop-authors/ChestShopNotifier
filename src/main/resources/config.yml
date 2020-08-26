@@ -10,6 +10,7 @@ notifications:
 
 history:
   max-rows: 10
+  query-limit: 10000
 
 debugging:
   verbose: true

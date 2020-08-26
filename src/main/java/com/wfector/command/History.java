@@ -26,6 +26,7 @@ public class History extends BukkitRunnable {
     private final boolean markRead;
     private int page;
     private final int maxRows;
+    private int queryLimit;
 
     private final List<HistoryEntry> historyEntries = new ArrayList<>();
 
@@ -38,6 +39,10 @@ public class History extends BukkitRunnable {
         this.page = page > 0 ? page : 1;
         this.markRead = markRead;
         maxRows = plugin.getConfig().getInt("history.max-rows");
+        queryLimit = plugin.getConfig().getInt("history.query-limit");
+        if (queryLimit <= 0) {
+            queryLimit = 10000;
+        }
     }
 
 
@@ -50,7 +55,7 @@ public class History extends BukkitRunnable {
         try (Connection c = plugin.getConnection()){
             Statement statement = c.createStatement();
 
-            ResultSet res = statement.executeQuery("SELECT * FROM `csnUUID` WHERE `ShopOwnerId`='" + userId.toString() + "' ORDER BY `Id` DESC LIMIT 1000;");
+            ResultSet res = statement.executeQuery("SELECT * FROM `csnUUID` WHERE `ShopOwnerId`='" + userId.toString() + "' ORDER BY `Id` DESC LIMIT " + queryLimit + ";");
 
             while (res.next()) {
                 UUID customerId = UUID.fromString(res.getString("CustomerId"));
