@@ -5,6 +5,7 @@ description: ${project.description}
 author: BetaBlaze
 authors: [Phoenix616, FrankHeijden]
 depend: [ChestShop]
+api-version: '1.13'
 commands:
    csn:
       description: Main ChestShopNotifier command.
