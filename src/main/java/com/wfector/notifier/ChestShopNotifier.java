@@ -9,6 +9,7 @@ import java.util.UUID;
 import java.util.logging.Level;
 import java.io.File;
 
+import com.Acrobot.ChestShop.Utils.ItemUtil;
 import com.zaxxer.hikari.HikariDataSource;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -27,8 +28,6 @@ import com.wfector.command.CommandRunner;
 import com.wfector.util.Time;
 
 import org.bukkit.scheduler.BukkitRunnable;
-
-import static com.Acrobot.Breeze.Utils.MaterialUtil.getSignName;
 
 public class ChestShopNotifier extends JavaPlugin implements Listener {
 
@@ -216,7 +215,7 @@ public class ChestShopNotifier extends JavaPlugin implements Listener {
         for (ItemStack item : e.getStock()) {
             if (itemType == null) {
                 itemType = item.getType();
-                itemId = getSignName(item);
+                itemId = ItemUtil.getName(item);
             }
             if (item.getType() == itemType) {
                 itemQuantities += item.getAmount();
