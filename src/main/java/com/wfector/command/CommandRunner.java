@@ -6,7 +6,11 @@ import java.util.List;
 import java.util.UUID;
 import java.util.logging.Level;
 
+import com.Acrobot.ChestShop.ChestShop;
 import com.Acrobot.ChestShop.Configuration.Properties;
+import com.Acrobot.ChestShop.Database.Account;
+import com.Acrobot.ChestShop.Events.AccountAccessEvent;
+import com.Acrobot.ChestShop.Permission;
 import com.Acrobot.ChestShop.UUIDs.NameManager;
 import com.wfector.notifier.BatchRunner;
 import org.bukkit.command.Command;
@@ -148,16 +152,21 @@ public class CommandRunner implements TabExecutor {
                             userNameBuilder.append(" ").append(args[i]);
                         }
                         String userName = userNameBuilder.toString();
-                        Player target = plugin.getServer().getPlayer(userName);
-                        if (target != null) {
-                            userId = target.getUniqueId();
-                        } else {
-                            userId = NameManager.getUUID(userName);
-                        }
-                        if (userId == null) {
+                        Account target = NameManager.getAccount(userName);
+                        if (target == null) {
                             sender.sendMessage(plugin.getMessage("user-not-found", "player", userName));
                             return true;
                         }
+                        if (sender instanceof Player
+                                && !sender.hasPermission("csn.command.history.other." + userName)) {
+                            AccountAccessEvent event = new AccountAccessEvent((Player) sender, target);
+                            ChestShop.callEvent(event);
+                            if (!event.canAccess()) {
+                                sender.sendMessage(plugin.getMessage("history-others-not-allowed", "username", userName));
+                                return true;
+                            }
+                        }
+                        userId = target.getUuid();
                         hasPage = true;
                     }
                     if (!hasPage) {

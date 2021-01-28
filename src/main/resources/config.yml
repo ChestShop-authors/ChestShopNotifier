@@ -43,6 +43,7 @@ messages:
   history-footer-clear: "&f- &cTo remove all old entries, type /csn clear"
   history-clear: "&cHistory cleared! New sales will continue to be recorded."
   history-marked-read: "&cUnread entries marked read!"
+  history-others-not-allowed: "&cYou are not allowed to check the history of {username}"
   # new translations
   reload-cmd: "&dChestShop Notifier // &7Reloading, please wait..."
   reload-success: "&aReloaded!"

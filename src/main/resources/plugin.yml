@@ -54,7 +54,10 @@ permissions:
         description: Allows cleaning of the database
         default: op
     csn.command.history.others:
-        description: Allow lookups on other users
+        description: Allow lookups on other users (will use ChestShop access check or permission below)
+        default: true
+    csn.command.history.other.<playername>:
+        description: Allow lookups on specific other users
         default: op
     csn.history.others:
         description: Allow lookups on other users
