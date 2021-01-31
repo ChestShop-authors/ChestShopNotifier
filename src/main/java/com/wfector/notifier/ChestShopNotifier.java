@@ -1,5 +1,6 @@
 package com.wfector.notifier;
 
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -124,16 +125,34 @@ public class ChestShopNotifier extends JavaPlugin implements Listener {
                     switch (ChestShopNotifier.this.dbType) {
                         default:
                         case SQLITE:
-                            statement.executeUpdate("CREATE TABLE IF NOT EXISTS csnUUID (Id INTEGER PRIMARY KEY AUTOINCREMENT, ShopOwnerId VARCHAR(36), CustomerId VARCHAR(36), ItemId VARCHAR(1000), Mode INT(11), Amount FLOAT(53), Quantity INT(11), Time INT(11), Unread INT(11))");
+                            statement.executeUpdate("CREATE TABLE IF NOT EXISTS csnUUID (Id INTEGER PRIMARY KEY AUTOINCREMENT, ShopOwnerId VARCHAR(36), CustomerId CHAR(36), CustomerName VARCHAR(16), ItemId VARCHAR(1000), Mode INT(11), Amount FLOAT(53), Quantity INT(11), Time INT(11), Unread INT(11))");
                             break;
                         case MYSQL:
-                            statement.executeUpdate("CREATE TABLE IF NOT EXISTS csnUUID (Id int(11) AUTO_INCREMENT, ShopOwnerId VARCHAR(36), CustomerId VARCHAR(36), ItemId VARCHAR(1000), Mode INT(11), Amount FLOAT(53), Quantity INT(11), Time INT(11), Unread INT(11), PRIMARY KEY (Id))");
+                            statement.executeUpdate("CREATE TABLE IF NOT EXISTS csnUUID (Id int(11) AUTO_INCREMENT, ShopOwnerId VARCHAR(36), CustomerId CHAR(36), CustomerName VARCHAR(16), ItemId VARCHAR(1000), Mode INT(11), Amount FLOAT(53), Quantity INT(11), Time INT(11), Unread INT(11), PRIMARY KEY (Id))");
                             break;
                     }
 
                     pluginEnabled = true;
                 } catch (SQLException e) {
                     e.printStackTrace();
+                }
+
+                try (Connection c = getConnection()){
+                    Statement statement = c.createStatement();
+
+                    switch (ChestShopNotifier.this.dbType) {
+                        default:
+                        case SQLITE:
+                            statement.executeUpdate("ALTER TABLE csnUUID ADD COLUMN CustomerName VARCHAR(16)");
+                            break;
+                        case MYSQL:
+                            statement.executeUpdate("ALTER TABLE csnUUID ADD COLUMN CustomerName VARCHAR(16) AFTER CustomerId");
+                            break;
+                    }
+                } catch (SQLException e) {
+                    if (!e.getMessage().contains("duplicate column name")) {
+                        e.printStackTrace();
+                    }
                 }
 
                 if(pluginEnabled) {
@@ -197,7 +216,7 @@ public class ChestShopNotifier extends JavaPlugin implements Listener {
     public boolean onChestShopTransaction(TransactionEvent e) {
         if (e.getStock().length == 0) return true;
 
-        UUID ownerId = e.getOwner().getUniqueId();
+        UUID ownerId = e.getOwnerAccount().getUuid();
 
         if(!this.logAdminShop && NameManager.isAdminShop(ownerId)) return true;
 
@@ -205,7 +224,7 @@ public class ChestShopNotifier extends JavaPlugin implements Listener {
 
         int mode = (f == TransactionType.BUY) ? 1 : 2;
 
-        double price = e.getPrice();
+        BigDecimal price = e.getExactPrice();
         UUID clientId = e.getClient().getUniqueId();
 
         String itemId = "";
@@ -227,9 +246,10 @@ public class ChestShopNotifier extends JavaPlugin implements Listener {
         batch.add(new Object[] {
                 ownerId.toString(),
                 clientId.toString(),
+                e.getClient().getName(),
                 itemId,
                 mode,
-                price,
+                price.doubleValue(),
                 Time.getEpochTime(),
                 itemQuantities,
                 0

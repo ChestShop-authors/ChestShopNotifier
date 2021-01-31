@@ -23,7 +23,7 @@ public class Clear extends BukkitRunnable {
     }
 
     public void run() {
-        UUID senderId = (sender instanceof Player) ? ((Player) sender).getUniqueId() : NameManager.getUUID(Properties.ADMIN_SHOP_NAME);
+        UUID senderId = (sender instanceof Player) ? ((Player) sender).getUniqueId() : NameManager.getAccount(Properties.ADMIN_SHOP_NAME).getUuid();
         try (Connection c = plugin.getConnection()){
             Statement statement = c.createStatement();
             statement.executeUpdate("DELETE FROM csnUUID WHERE `Unread`='1' AND `ShopOwnerId`='" + senderId.toString() + "'");

@@ -24,7 +24,7 @@ public class BatchRunner extends BukkitRunnable {
 
             try (Connection conn = plugin.getConnection()){
                 conn.setAutoCommit(false);
-                String qstr = "INSERT INTO csnUUID (`ShopOwnerId`, `CustomerId`, `ItemId`, `Mode`, `Amount`, `Time`, `Quantity`, `Unread`) VALUES (?,?,?,?,?,?,?,?)";
+                String qstr = "INSERT INTO csnUUID (`ShopOwnerId`, `CustomerId`, `CustomerName`, `ItemId`, `Mode`, `Amount`, `Time`, `Quantity`, `Unread`) VALUES (?,?,?,?,?,?,?,?,?)";
 
                 PreparedStatement statement = conn.prepareStatement(qstr);
 

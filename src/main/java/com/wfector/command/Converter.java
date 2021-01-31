@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.UUID;
 import java.util.logging.Level;
 
+import com.Acrobot.ChestShop.Database.Account;
 import com.Acrobot.ChestShop.UUIDs.NameManager;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
@@ -54,16 +55,17 @@ public class Converter extends BukkitRunnable {
                 UUID customerId = this.getPlayerID(costumer);
 
                 if(shopOwnerId != null && customerId != null) {
-                    PreparedStatement prepsta = conn.prepareStatement("INSERT INTO csnUUID (`ShopOwnerId`, `CustomerId`, `ItemId`, `Mode`, `Amount`, `Time`, `Quantity`, `Unread`) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+                    PreparedStatement prepsta = conn.prepareStatement("INSERT INTO csnUUID (`ShopOwnerId`, `CustomerId`, `CustomerName`, `ItemId`, `Mode`, `Amount`, `Time`, `Quantity`, `Unread`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
                     prepsta.setString(1, shopOwnerId.toString());
                     prepsta.setString(2, customerId.toString());
-                    prepsta.setString(3, res.getString("ItemId"));
-                    prepsta.setString(4, String.valueOf(res.getInt("Mode")));
-                    prepsta.setString(5, String.valueOf(res.getInt("Amount")));
-                    prepsta.setString(6, String.valueOf(res.getInt("Time")));
-                    prepsta.setString(7, String.valueOf(res.getInt("Quantity")));
-                    prepsta.setString(8, String.valueOf(res.getInt("Unread")));
+                    prepsta.setString(3, costumer);
+                    prepsta.setString(4, res.getString("ItemId"));
+                    prepsta.setString(5, String.valueOf(res.getInt("Mode")));
+                    prepsta.setString(6, String.valueOf(res.getInt("Amount")));
+                    prepsta.setString(7, String.valueOf(res.getInt("Time")));
+                    prepsta.setString(8, String.valueOf(res.getInt("Quantity")));
+                    prepsta.setString(9, String.valueOf(res.getInt("Unread")));
 
                     prepsta.execute();
                 }
@@ -84,16 +86,18 @@ public class Converter extends BukkitRunnable {
         if(uuidmap.containsKey(playername.toLowerCase())) {
             playerid = uuidmap.get(playername.toLowerCase());
         } else {
-            playerid = NameManager.getUUID(playername);
-            if (playerid == null) {
+            Account account = NameManager.getAccount(playername);
+            if (account == null) {
                 OfflinePlayer op = Bukkit.getOfflinePlayer(playername);
                 if (op == null) {
                     plugin.getLogger().log(Level.SEVERE, "Could not get the player " + playername);
                     return null;
                 }
                 playerid = op.getUniqueId();
+            } else {
+                playerid = account.getUuid();
             }
-            if(playerid == null || playerid.version() != 4) {
+            if (playerid == null || (plugin.getServer().getOnlineMode() && playerid.version() != 4)) {
                 plugin.getLogger().log(Level.WARNING, "Could not find a player with the username " + playername);
                 return null;
             }

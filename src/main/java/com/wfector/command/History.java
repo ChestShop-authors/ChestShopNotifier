@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import com.Acrobot.ChestShop.Database.Account;
 import com.Acrobot.ChestShop.Events.TransactionEvent.TransactionType;
 import com.Acrobot.ChestShop.UUIDs.NameManager;
 import org.bukkit.ChatColor;
@@ -59,9 +60,19 @@ public class History extends BukkitRunnable {
 
             while (res.next()) {
                 UUID customerId = UUID.fromString(res.getString("CustomerId"));
+                String customerName = res.getString("CustomerName");
+                Player player = plugin.getServer().getPlayer(customerId);
+                if (player != null) {
+                    customerName = player.getName();
+                } else {
+                    Account account = NameManager.getAccount(customerId);
+                    if (account != null) {
+                        customerName = account.getName();
+                    }
+                }
                 HistoryEntry entry = new HistoryEntry(
                         customerId,
-                        NameManager.getUsername(customerId),
+                        customerName,
                         res.getString("ItemId"),
                         res.getDouble("Amount"),
                         res.getInt("Time"),
@@ -101,8 +112,8 @@ public class History extends BukkitRunnable {
         boolean other = !(sender instanceof Player) || !((Player) sender).getUniqueId().equals(userId);
         String message = plugin.getMessage("history-caption");
         if (other) {
-            String userName = NameManager.getUsername(userId);
-            message += ChatColor.GRAY + " (" + (userName != null ? userName : userId) + ")";
+            Account account = NameManager.getAccount(userId);
+            message += ChatColor.GRAY + " (" + (account != null ? account.getName() : userId) + ")";
         }
         sender.sendMessage(message);
         sender.sendMessage("");

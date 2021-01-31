@@ -90,11 +90,14 @@ public class CommandRunner implements TabExecutor {
                                     }
                                     break;
                                 case USER:
-                                    UUID userId;
+                                    UUID userId = null;
                                     try {
                                         userId = UUID.fromString(args[i+1]);
                                     } catch (IllegalArgumentException e) {
-                                        userId = NameManager.getUUID(args[i+1]);
+                                        Account account = NameManager.getAccount(args[i+1]);
+                                        if (account != null) {
+                                            userId = account.getUuid();
+                                        }
                                     }
                                     if (userId != null) {
                                         cleaner.cleanUser(userId);
@@ -133,7 +136,7 @@ public class CommandRunner implements TabExecutor {
 
 
                 boolean markRead;
-                UUID userId = (sender instanceof Player) ? ((Player) sender).getUniqueId() : NameManager.getUUID(Properties.ADMIN_SHOP_NAME);
+                UUID userId = (sender instanceof Player) ? ((Player) sender).getUniqueId() : NameManager.getAccount(Properties.ADMIN_SHOP_NAME).getUuid();
                 int page = 1;
                 if(args.length > 1) {
                     boolean hasPage = false;
