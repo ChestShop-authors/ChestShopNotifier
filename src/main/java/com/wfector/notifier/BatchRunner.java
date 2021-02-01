@@ -31,7 +31,7 @@ public class BatchRunner extends BukkitRunnable {
                 for(int i = 0; i < plugin.getBatch().size(); i++) {
                     Object[] values = plugin.getBatch().get(i);
 
-                    for (int j = 0; j < 8; j++) {
+                    for (int j = 0; j < statement.getParameterMetaData().getParameterCount(); j++) {
                         statement.setObject(j + 1, values[j]);
                     }
                     statement.addBatch();

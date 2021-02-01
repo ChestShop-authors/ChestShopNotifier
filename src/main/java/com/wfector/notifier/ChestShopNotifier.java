@@ -150,7 +150,7 @@ public class ChestShopNotifier extends JavaPlugin implements Listener {
                             break;
                     }
                 } catch (SQLException e) {
-                    if (!e.getMessage().contains("duplicate column name")) {
+                    if (!e.getMessage().toLowerCase().contains("duplicate column name")) {
                         e.printStackTrace();
                     }
                 }
