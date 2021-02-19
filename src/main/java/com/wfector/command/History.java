@@ -60,16 +60,7 @@ public class History extends BukkitRunnable {
 
             while (res.next()) {
                 UUID customerId = UUID.fromString(res.getString("CustomerId"));
-                String customerName = res.getString("CustomerName");
-                Player player = plugin.getServer().getPlayer(customerId);
-                if (player != null) {
-                    customerName = player.getName();
-                } else {
-                    Account account = NameManager.getAccount(customerId);
-                    if (account != null) {
-                        customerName = account.getName();
-                    }
-                }
+                String customerName = plugin.getPlayerName(customerId, res.getString("CustomerName"));
                 HistoryEntry entry = new HistoryEntry(
                         customerId,
                         customerName,

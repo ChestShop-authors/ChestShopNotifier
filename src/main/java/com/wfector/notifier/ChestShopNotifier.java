@@ -7,13 +7,19 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.io.File;
 
+import com.Acrobot.ChestShop.Database.Account;
 import com.Acrobot.ChestShop.Utils.ItemUtil;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.zaxxer.hikari.HikariDataSource;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -43,6 +49,8 @@ public class ChestShopNotifier extends JavaPlugin implements Listener {
 
     public boolean pluginEnabled = false;
     public boolean logAdminShop = true;
+
+    public Cache<UUID, String> playerNames = CacheBuilder.newBuilder().expireAfterWrite(5, TimeUnit.MINUTES).build();
 
     public void onEnable() {
         getCommand("csn").setExecutor(new CommandRunner(this));
@@ -273,6 +281,31 @@ public class ChestShopNotifier extends JavaPlugin implements Listener {
 
     public List<Object[]> getBatch() {
         return batch;
+    }
+
+    public String getPlayerName(UUID playerId, String playerName) {
+        try {
+            return playerNames.get(playerId, () -> {
+                Player player = getServer().getPlayer(playerId);
+                if (player != null) {
+                    return player.getName();
+                } else {
+                    Account account = NameManager.getAccount(playerId);
+                    if (account != null && account.getName() != null) {
+                        return account.getName();
+                    }
+                    if (playerName == null) {
+                        OfflinePlayer offlinePlayer = getServer().getOfflinePlayer(playerId);
+                        if (offlinePlayer != null && offlinePlayer.getName() != null) {
+                            return offlinePlayer.getName();
+                        }
+                    }
+                }
+                throw new Exception("Player not found");
+            });
+        } catch (ExecutionException e) {
+            return null;
+        }
     }
 
     private enum DbType {
