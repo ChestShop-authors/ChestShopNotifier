@@ -299,12 +299,14 @@ public class ChestShopNotifier extends JavaPlugin implements Listener {
                         if (offlinePlayer != null && offlinePlayer.getName() != null) {
                             return offlinePlayer.getName();
                         }
+                    } else {
+                        return playerName;
                     }
                 }
                 throw new Exception("Player not found");
             });
         } catch (ExecutionException e) {
-            return null;
+            return playerName;
         }
     }
 
