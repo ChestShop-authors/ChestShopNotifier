@@ -8,9 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import com.Acrobot.ChestShop.Database.Account;
 import com.Acrobot.ChestShop.Events.TransactionEvent.TransactionType;
-import com.Acrobot.ChestShop.UUIDs.NameManager;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 
@@ -23,6 +21,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 public class History extends BukkitRunnable {
 
     private final UUID userId;
+    private final String userName;
     private final CommandSender sender;
     private final boolean markRead;
     private int page;
@@ -33,9 +32,10 @@ public class History extends BukkitRunnable {
 
     private ChestShopNotifier plugin;
 
-    public History(ChestShopNotifier plugin, UUID userId, CommandSender sender, int page, boolean markRead) {
+    public History(ChestShopNotifier plugin, UUID userId, String userName, CommandSender sender, int page, boolean markRead) {
         this.plugin = plugin;
         this.userId = userId;
+        this.userName = userName;
         this.sender = sender;
         this.page = page > 0 ? page : 1;
         this.markRead = markRead;
@@ -103,8 +103,7 @@ public class History extends BukkitRunnable {
         boolean other = !(sender instanceof Player) || !((Player) sender).getUniqueId().equals(userId);
         String message = plugin.getMessage("history-caption");
         if (other) {
-            Account account = NameManager.getAccount(userId);
-            message += ChatColor.GRAY + " (" + (account != null ? account.getName() : userId) + ")";
+            message += ChatColor.GRAY + " (" + userName + ")";
         }
         sender.sendMessage(message);
         sender.sendMessage("");

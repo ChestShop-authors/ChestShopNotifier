@@ -10,7 +10,7 @@ import com.Acrobot.ChestShop.ChestShop;
 import com.Acrobot.ChestShop.Configuration.Properties;
 import com.Acrobot.ChestShop.Database.Account;
 import com.Acrobot.ChestShop.Events.AccountAccessEvent;
-import com.Acrobot.ChestShop.Permission;
+import com.Acrobot.ChestShop.Events.AccountQueryEvent;
 import com.Acrobot.ChestShop.UUIDs.NameManager;
 import com.wfector.notifier.BatchRunner;
 import org.bukkit.command.Command;
@@ -136,7 +136,15 @@ public class CommandRunner implements TabExecutor {
 
 
                 boolean markRead;
-                UUID userId = (sender instanceof Player) ? ((Player) sender).getUniqueId() : NameManager.getAccount(Properties.ADMIN_SHOP_NAME).getUuid();
+                UUID userId;
+                String userName;
+                if (sender instanceof Player) {
+                    userId = ((Player) sender).getUniqueId();
+                    userName = sender.getName();
+                } else {
+                    userId = NameManager.getAccount(Properties.ADMIN_SHOP_NAME).getUuid();
+                    userName = Properties.ADMIN_SHOP_NAME;
+                }
                 int page = 1;
                 if(args.length > 1) {
                     boolean hasPage = false;
@@ -154,8 +162,13 @@ public class CommandRunner implements TabExecutor {
                         for (int i = 2; i < args.length - (hasPage ? 1 : 0); i++) {
                             userNameBuilder.append(" ").append(args[i]);
                         }
-                        String userName = userNameBuilder.toString();
-                        Account target = NameManager.getAccount(userName);
+                        userName = userNameBuilder.toString();
+                        AccountQueryEvent queryEvent = new AccountQueryEvent(userName);
+                        plugin.getServer().getPluginManager().callEvent(queryEvent);
+                        Account target = queryEvent.getAccount();
+                        if (target == null) {
+                            target = NameManager.getAccount(userName);
+                        }
                         if (target == null) {
                             sender.sendMessage(plugin.getMessage("user-not-found", "player", userName));
                             return true;
@@ -170,6 +183,7 @@ public class CommandRunner implements TabExecutor {
                             }
                         }
                         userId = target.getUuid();
+                        userName = target.getName();
                         hasPage = true;
                     }
                     if (!hasPage) {
@@ -182,7 +196,7 @@ public class CommandRunner implements TabExecutor {
                     markRead = true;
                 }
 
-                new History(plugin, userId, sender, page, markRead).runTaskAsynchronously(plugin);
+                new History(plugin, userId, userName, sender, page, markRead).runTaskAsynchronously(plugin);
 
                 return true;
 
