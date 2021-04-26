@@ -28,6 +28,7 @@ public class Help {
         }
         if(sender.hasPermission("csn.command.history.others")) {
             helpItems.add(plugin.getMessage("help.history-others"));
+            helpItems.add(plugin.getMessage("help.clear-others"));
         }
         if(sender.hasPermission("csn.command.cleandatabase")) {
             helpItems.add(plugin.getMessage("help.cleandatabase"));

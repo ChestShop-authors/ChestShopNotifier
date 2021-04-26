@@ -206,7 +206,45 @@ public class CommandRunner implements TabExecutor {
                     return true;
                 }
 
-                new Clear(plugin, sender).runTaskAsynchronously(plugin);
+                UUID userId;
+                if (sender instanceof Player) {
+                    userId = ((Player) sender).getUniqueId();
+                } else {
+                    userId = NameManager.getAccount(Properties.ADMIN_SHOP_NAME).getUuid();
+                }
+                if(args.length > 1 && sender.hasPermission("csn.command.history.others")) {
+                    if (!sender.hasPermission("csn.command.history.others")) {
+                        sender.sendMessage(plugin.getMessage("missing-permission", "permission", "csn.command.history.others"));
+                        return true;
+                    }
+                    StringBuilder userNameBuilder = new StringBuilder(args[1]);
+                    for (int i = 2; i < args.length; i++) {
+                        userNameBuilder.append(" ").append(args[i]);
+                    }
+                    String userName = userNameBuilder.toString();
+                    AccountQueryEvent queryEvent = new AccountQueryEvent(userName);
+                    plugin.getServer().getPluginManager().callEvent(queryEvent);
+                    Account target = queryEvent.getAccount();
+                    if (target == null) {
+                        target = NameManager.getAccount(userName);
+                    }
+                    if (target == null) {
+                        sender.sendMessage(plugin.getMessage("user-not-found", "player", userName));
+                        return true;
+                    }
+                    if (sender instanceof Player
+                            && !sender.hasPermission("csn.command.history.other." + userName)) {
+                        AccountAccessEvent event = new AccountAccessEvent((Player) sender, target);
+                        ChestShop.callEvent(event);
+                        if (!event.canAccess()) {
+                            sender.sendMessage(plugin.getMessage("history-others-not-allowed", "username", userName));
+                            return true;
+                        }
+                    }
+                    userId = target.getUuid();
+                }
+
+                new Clear(plugin, sender, userId).runTaskAsynchronously(plugin);
 
                 return true;
             }
@@ -219,9 +257,9 @@ public class CommandRunner implements TabExecutor {
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
         if (args.length == 0) {
-            return Arrays.asList("history", "read", "clear");
+            return Arrays.asList("history", "clear");
         } else if (args.length == 1) {
-            for (String s : new String[]{"history", "read", "clear"}) {
+            for (String s : new String[]{"history", "clear"}) {
                 if (s.toLowerCase().startsWith(args[0].toLowerCase()) && s.length() > args[0].length()) {
                     return Collections.singletonList(s);
                 }
