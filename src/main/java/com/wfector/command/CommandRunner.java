@@ -147,6 +147,7 @@ public class CommandRunner implements TabExecutor {
                 }
                 int page = 1;
                 if(args.length > 1) {
+                    markRead = false;
                     boolean hasPage = false;
                     try {
                         page = Integer.parseInt(args[args.length - 1]);
@@ -181,6 +182,7 @@ public class CommandRunner implements TabExecutor {
                                 sender.sendMessage(plugin.getMessage("history-others-not-allowed", "username", userName));
                                 return true;
                             }
+                            markRead = true;
                         }
                         userId = target.getUuid();
                         userName = target.getName();
@@ -190,8 +192,6 @@ public class CommandRunner implements TabExecutor {
                         sender.sendMessage(plugin.getMessage("page-not-found", "page", args[args.length - 1]));
                         return true;
                     }
-
-                    markRead = false;
                 } else {
                     markRead = true;
                 }
