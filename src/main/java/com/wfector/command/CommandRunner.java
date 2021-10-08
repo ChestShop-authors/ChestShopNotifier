@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.logging.Level;
+import java.util.regex.Pattern;
 
 import com.Acrobot.ChestShop.ChestShop;
 import com.Acrobot.ChestShop.Configuration.Properties;
@@ -22,6 +23,7 @@ import com.wfector.notifier.ChestShopNotifier;
 
 public class CommandRunner implements TabExecutor {
     private final ChestShopNotifier plugin;
+    private final Pattern usernamePattern = Pattern.compile("^[a-zA-Z0-9-_]+$");
 
     public CommandRunner(ChestShopNotifier plugin) {
         this.plugin = plugin;
@@ -164,6 +166,10 @@ public class CommandRunner implements TabExecutor {
                             userNameBuilder.append(" ").append(args[i]);
                         }
                         userName = userNameBuilder.toString();
+                        if (!usernamePattern.matcher(userName).matches() || userName.length() > 16)  {
+                            sender.sendMessage(plugin.getMessage("user-not-found", "player", userName));
+                            return true;
+                        }
                         AccountQueryEvent queryEvent = new AccountQueryEvent(userName);
                         plugin.getServer().getPluginManager().callEvent(queryEvent);
                         Account target = queryEvent.getAccount();
@@ -222,6 +228,10 @@ public class CommandRunner implements TabExecutor {
                         userNameBuilder.append(" ").append(args[i]);
                     }
                     String userName = userNameBuilder.toString();
+                    if (!usernamePattern.matcher(userName).matches() || userName.length() > 16)  {
+                        sender.sendMessage(plugin.getMessage("user-not-found", "player", userName));
+                        return true;
+                    }
                     AccountQueryEvent queryEvent = new AccountQueryEvent(userName);
                     plugin.getServer().getPluginManager().callEvent(queryEvent);
                     Account target = queryEvent.getAccount();
