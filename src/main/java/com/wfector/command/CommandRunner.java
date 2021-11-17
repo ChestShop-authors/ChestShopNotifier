@@ -165,6 +165,7 @@ public class CommandRunner implements TabExecutor {
                         }
                         userName = userNameBuilder.toString();
                         AccountQueryEvent queryEvent = new AccountQueryEvent(userName);
+                        queryEvent.searchOfflinePlayers(false);
                         plugin.getServer().getPluginManager().callEvent(queryEvent);
                         Account target = queryEvent.getAccount();
                         if (target == null) {
@@ -223,6 +224,7 @@ public class CommandRunner implements TabExecutor {
                     }
                     String userName = userNameBuilder.toString();
                     AccountQueryEvent queryEvent = new AccountQueryEvent(userName);
+                    queryEvent.searchOfflinePlayers(false);
                     plugin.getServer().getPluginManager().callEvent(queryEvent);
                     Account target = queryEvent.getAccount();
                     if (target == null) {
