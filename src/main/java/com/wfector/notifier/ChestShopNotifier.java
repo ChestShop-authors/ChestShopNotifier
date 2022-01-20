@@ -221,12 +221,12 @@ public class ChestShopNotifier extends JavaPlugin implements Listener {
     }
 
     @EventHandler
-    public boolean onChestShopTransaction(TransactionEvent e) {
-        if (e.getStock().length == 0) return true;
+    public void onChestShopTransaction(TransactionEvent e) {
+        if (e.getStock().length == 0) return;
 
         UUID ownerId = e.getOwnerAccount().getUuid();
 
-        if(!this.logAdminShop && NameManager.isAdminShop(ownerId)) return true;
+        if(!this.logAdminShop && NameManager.isAdminShop(ownerId)) return;
 
         TransactionType f = e.getTransactionType();
 
@@ -265,8 +265,6 @@ public class ChestShopNotifier extends JavaPlugin implements Listener {
 
         debug("Item added to batch.");
         new BatchRunner(this).runTaskAsynchronously(this);
-
-        return true;
     }
 
     public void debug(String d) {
