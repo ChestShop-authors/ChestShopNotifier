@@ -17,10 +17,9 @@ public class BatchRunner extends BukkitRunnable {
     public void run() {
         plugin.debug("Uploading a batch...");
 
-        if(plugin.getBatch().isEmpty()) return;
-        if(!plugin.isPluginEnabled()) return;
+        if (!plugin.isPluginEnabled()) return;
 
-        if(plugin.getBatch().size() > 0) {
+        if (plugin.getBatch().size() > 0) {
 
             try (Connection conn = plugin.getConnection()){
                 conn.setAutoCommit(false);
@@ -28,27 +27,33 @@ public class BatchRunner extends BukkitRunnable {
 
                 PreparedStatement statement = conn.prepareStatement(qstr);
 
-                for(int i = 0; i < plugin.getBatch().size(); i++) {
-                    Object[] values = plugin.getBatch().get(i);
+                int i = 0;
+                HistoryEntry entry;
+                while ((entry = plugin.getBatch().poll()) != null) {
+                    i++;
 
-                    for (int j = 0; j < statement.getParameterMetaData().getParameterCount(); j++) {
-                        statement.setObject(j + 1, values[j]);
-                    }
+                    statement.setString(1, entry.getShopOwnerId().toString());
+                    statement.setString(2, entry.getCustomerId().toString());
+                    statement.setString(3, entry.getCustomerName());
+                    statement.setString(4, entry.getItemId());
+                    statement.setInt(5, entry.getType().ordinal() + 1);
+                    statement.setDouble(6, entry.getPrice());
+                    statement.setInt(7, entry.getTime());
+                    statement.setInt(8, entry.getQuantity());
+                    statement.setInt(9, entry.isUnread() ? 0 : 1);
+
                     statement.addBatch();
-                    if (i % 1000 == 0 || i + 1 == plugin.getBatch().size()) {
+                    if (i % 1000 == 0 || plugin.getBatch().isEmpty()) {
                         statement.executeBatch(); // Execute every 1000 items.
                         conn.commit();
                     }
                 }
 
                 plugin.debug("Update: " + qstr);
-
-                plugin.getBatch().clear();
             } catch (SQLException e) {
                 e.printStackTrace();
             }
+            plugin.debug("Batch completed.");
         }
-
-        plugin.debug("Batch completed.");
     }
 }

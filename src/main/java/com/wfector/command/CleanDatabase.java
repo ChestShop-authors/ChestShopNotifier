@@ -33,7 +33,7 @@ public class CleanDatabase extends BukkitRunnable {
                 where.add("`Unread`='1'");
             }
             if (cleanBefore > 0) {
-                where.add("`Time`<" + (int) (Time.getEpochTime() - cleanBefore * 24 * 60 * 60));
+                where.add("`Time`<" + (Time.getEpochTime() - cleanBefore * 24 * 60 * 60));
             }
             if (user != null) {
                 where.add("`ShopOwnerId`='" + user.toString() + "'");

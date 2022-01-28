@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.UUID;
 
 import com.Acrobot.ChestShop.Events.TransactionEvent.TransactionType;
+import com.wfector.notifier.HistoryEntry;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 
@@ -62,6 +63,7 @@ public class History extends BukkitRunnable {
                 UUID customerId = UUID.fromString(res.getString("CustomerId"));
                 String customerName = plugin.getPlayerName(customerId, res.getString("CustomerName"));
                 HistoryEntry entry = new HistoryEntry(
+                        userId,
                         customerId,
                         customerName,
                         res.getString("ItemId"),
@@ -145,92 +147,4 @@ public class History extends BukkitRunnable {
 
     }
 
-    private class HistoryEntry {
-        private final UUID customerId;
-        private final String customerName;
-        private final String itemId;
-        private double price;
-        private int time;
-        private final TransactionType type;
-        private int quantity;
-        private final boolean unread;
-
-        public HistoryEntry(UUID customerId, String customerName, String itemId, double amount, int time, TransactionType type, int quantity, boolean unread) {
-            this.customerId = customerId;
-            this.customerName = customerName;
-            this.itemId = itemId;
-            this.price = amount / quantity;
-            this.time = time;
-            this.type = type;
-            this.quantity = quantity;
-            this.unread = unread;
-        }
-
-        public UUID getCustomerId() {
-            return customerId;
-        }
-
-        public String getCustomerName() {
-            return customerName;
-        }
-
-        public String getItemId() {
-            return itemId;
-        }
-
-        public double getPrice() {
-            return price;
-        }
-
-        public int getTime() {
-            return time;
-        }
-
-        public TransactionType getType() {
-            return type;
-        }
-
-        public int getQuantity() {
-            return quantity;
-        }
-
-        public boolean isUnread() {
-            return unread;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) {
-                return true;
-            }
-            if (o instanceof HistoryEntry) {
-                HistoryEntry entry = (HistoryEntry) o;
-                return this.getCustomerId().equals(entry.getCustomerId())
-                        && this.getItemId().equals(entry.getItemId())
-                        && this.getPrice() == entry.getPrice()
-                        && this.getTime() == entry.getTime()
-                        && this.getType() == entry.getType()
-                        && this.getQuantity() == entry.getQuantity()
-                        && this.isUnread() == entry.isUnread();
-            }
-            return false;
-        }
-
-        public boolean isSimilar(HistoryEntry entry) {
-            return equals(entry)
-                    || this.getCustomerId().equals(entry.getCustomerId())
-                    && this.getType() == entry.getType()
-                    && this.getPrice() == entry.getPrice()
-                    && this.getItemId().equals(entry.getItemId())
-                    && this.getTime() < entry.getTime() + 5 * 60 // Check if they are a maximum of 5 minutes apart
-                    && this.getTime() > entry.getTime() - 5 * 60;
-        }
-
-        public void mergeWith(HistoryEntry entry) {
-            quantity += entry.getQuantity();
-            if (time < entry.getTime()) {
-                time = entry.getTime();
-            }
-        }
-    }
 }

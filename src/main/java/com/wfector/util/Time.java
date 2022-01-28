@@ -4,12 +4,12 @@ import java.util.Date;
 
 public class Time {
 
-    public static long getEpochTime() {
-        return new Date().getTime() / 1000;
+    public static int getEpochTime() {
+        return (int) (new Date().getTime() / 1000);
     }
 
     public static String getAgo(int seconds) {
-        int currentTime = (int) getEpochTime();
+        int currentTime = getEpochTime();
 
         int difference = (currentTime - seconds);
 

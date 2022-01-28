@@ -4,8 +4,10 @@ import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Queue;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -29,7 +31,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.Acrobot.ChestShop.Events.TransactionEvent;
-import com.Acrobot.ChestShop.Events.TransactionEvent.TransactionType;
 import com.Acrobot.ChestShop.UUIDs.NameManager;
 import com.wfector.command.CommandRunner;
 import com.wfector.util.Time;
@@ -41,7 +42,7 @@ public class ChestShopNotifier extends JavaPlugin implements Listener {
     private HikariDataSource ds;
     private DbType dbType = DbType.SQLITE;
 
-    private List<Object[]> batch = new ArrayList<>();
+    private Queue<HistoryEntry> batch = new ArrayDeque<>();
 
     private boolean verboseEnabled;
     private boolean joinNotificationEnabled;
@@ -228,10 +229,6 @@ public class ChestShopNotifier extends JavaPlugin implements Listener {
 
         if(!this.logAdminShop && NameManager.isAdminShop(ownerId)) return;
 
-        TransactionType f = e.getTransactionType();
-
-        int mode = (f == TransactionType.BUY) ? 1 : 2;
-
         BigDecimal price = e.getExactPrice();
         UUID clientId = e.getClient().getUniqueId();
 
@@ -251,17 +248,17 @@ public class ChestShopNotifier extends JavaPlugin implements Listener {
             }
         }
 
-        batch.add(new Object[] {
-                ownerId.toString(),
-                clientId.toString(),
+        batch.add(new HistoryEntry(
+                ownerId,
+                clientId,
                 e.getClient().getName(),
                 itemId,
-                mode,
                 price.doubleValue(),
                 Time.getEpochTime(),
+                e.getTransactionType(),
                 itemQuantities,
-                0
-        });
+                true
+        ));
 
         debug("Item added to batch.");
         new BatchRunner(this).runTaskAsynchronously(this);
@@ -277,7 +274,7 @@ public class ChestShopNotifier extends JavaPlugin implements Listener {
 
     }
 
-    public List<Object[]> getBatch() {
+    public Queue<HistoryEntry> getBatch() {
         return batch;
     }
 

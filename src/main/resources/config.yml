@@ -1,5 +1,4 @@
 # Chest Shop Notifier
-# Config file for 1.2
 
 logging:
   admin-shop: true
