@@ -9,18 +9,18 @@ public class HistoryEntry {
     private final UUID customerId;
     private final String customerName;
     private final String itemId;
-    private double price;
+    private double amountPaid;
     private int time;
     private final TransactionEvent.TransactionType type;
     private int quantity;
     private final boolean unread;
 
-    public HistoryEntry(UUID shopOwnerId, UUID customerId, String customerName, String itemId, double amount, int time, TransactionEvent.TransactionType type, int quantity, boolean unread) {
+    public HistoryEntry(UUID shopOwnerId, UUID customerId, String customerName, String itemId, double amountPaid, int time, TransactionEvent.TransactionType type, int quantity, boolean unread) {
         this.shopOwnerId = shopOwnerId;
         this.customerId = customerId;
         this.customerName = customerName;
         this.itemId = itemId;
-        this.price = amount / quantity;
+        this.amountPaid = amountPaid;
         this.time = time;
         this.type = type;
         this.quantity = quantity;
@@ -43,8 +43,12 @@ public class HistoryEntry {
         return itemId;
     }
 
-    public double getPrice() {
-        return price;
+    public double getAmountPaid() {
+        return amountPaid;
+    }
+
+    public double getPricePerItem() {
+        return amountPaid / quantity;
     }
 
     public int getTime() {
@@ -72,7 +76,7 @@ public class HistoryEntry {
             HistoryEntry entry = (HistoryEntry) o;
             return this.getCustomerId().equals(entry.getCustomerId())
                     && this.getItemId().equals(entry.getItemId())
-                    && this.getPrice() == entry.getPrice()
+                    && this.getAmountPaid() == entry.getAmountPaid()
                     && this.getTime() == entry.getTime()
                     && this.getType() == entry.getType()
                     && this.getQuantity() == entry.getQuantity()
@@ -85,7 +89,7 @@ public class HistoryEntry {
         return equals(entry)
                 || this.getCustomerId().equals(entry.getCustomerId())
                 && this.getType() == entry.getType()
-                && this.getPrice() == entry.getPrice()
+                && this.getPricePerItem() == entry.getPricePerItem()
                 && this.getItemId().equals(entry.getItemId())
                 && this.getTime() < entry.getTime() + 5 * 60 // Check if they are a maximum of 5 minutes apart
                 && this.getTime() > entry.getTime() - 5 * 60;
@@ -93,6 +97,7 @@ public class HistoryEntry {
 
     public void mergeWith(HistoryEntry entry) {
         quantity += entry.getQuantity();
+        amountPaid += entry.getAmountPaid();
         if (time < entry.getTime()) {
             time = entry.getTime();
         }

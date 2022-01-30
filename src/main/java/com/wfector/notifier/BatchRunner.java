@@ -37,7 +37,7 @@ public class BatchRunner extends BukkitRunnable {
                     statement.setString(3, entry.getCustomerName());
                     statement.setString(4, entry.getItemId());
                     statement.setInt(5, entry.getType().ordinal() + 1);
-                    statement.setDouble(6, entry.getPrice());
+                    statement.setDouble(6, entry.getAmountPaid());
                     statement.setInt(7, entry.getTime());
                     statement.setInt(8, entry.getQuantity());
                     statement.setInt(9, entry.isUnread() ? 0 : 1);

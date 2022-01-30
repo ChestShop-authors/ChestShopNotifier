@@ -127,7 +127,7 @@ public class History extends BukkitRunnable {
                     "count", String.valueOf(entry.getQuantity()),
                     "item", entry.getItemId().replace(" ", ""),
                     "timeago", Time.getAgo(entry.getTime()),
-                    "money", Economy.formatBalance(entry.getPrice() * entry.getQuantity())
+                    "money", Economy.formatBalance(entry.getAmountPaid())
             );
 
             sender.sendMessage(msgString);
