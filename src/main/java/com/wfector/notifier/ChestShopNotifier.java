@@ -248,6 +248,9 @@ public class ChestShopNotifier extends JavaPlugin implements Listener {
             }
         }
 
+        // Check whether we need to start a new runner by checking if the batch is empty
+        boolean startRunner = batch.isEmpty();
+
         batch.add(new HistoryEntry(
                 ownerId,
                 clientId,
@@ -261,7 +264,10 @@ public class ChestShopNotifier extends JavaPlugin implements Listener {
         ));
 
         debug("Item added to batch.");
-        new BatchRunner(this).runTaskAsynchronously(this);
+
+        if (startRunner) {
+            new BatchRunner(this).runTaskAsynchronously(this);
+        }
     }
 
     public void debug(String d) {

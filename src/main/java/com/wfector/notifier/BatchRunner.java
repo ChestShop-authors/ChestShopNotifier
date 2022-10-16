@@ -43,10 +43,16 @@ public class BatchRunner extends BukkitRunnable {
                     statement.setInt(9, entry.isUnread() ? 0 : 1);
 
                     statement.addBatch();
-                    if (i % 1000 == 0 || plugin.getBatch().isEmpty()) {
+                    if (i % 1000 == 0) {
                         statement.executeBatch(); // Execute every 1000 items.
                         conn.commit();
                     }
+                }
+
+                // Check iteration count to see if we have uncommitted data
+                if (i % 1000 != 0) {
+                    statement.executeBatch();
+                    conn.commit();
                 }
 
                 plugin.debug("Update: " + qstr);
