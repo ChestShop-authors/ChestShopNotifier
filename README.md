@@ -1,6 +1,6 @@
 # ChestShopNotifier
 
-CSN (ChestShop Notifier) is a plugin that records ChestShop transactions to a MySQL database. When a shop owner logs onto the server, they will be presented with an option to view sales from when they were offline. 
+CSN (ChestShop Notifier) is a plugin that records ChestShop transactions to a database (MySQL or SQLite). When a shop owner logs onto the server, they will be presented with an option to view sales from when they were offline. 
 
 ## Downloads
 
@@ -45,8 +45,8 @@ For all permissions take a look at the [plugin.yml](https://github.com/Phoenix61
 
 ## Requirements
 
-- Functional MySQL server. This plugin only uses MySQL, nothing else.
-- ChestShop installed and running. 
+- ChestShop installed and running.
+- *Optional: Functional MySQL server if you don't want to use SQLite!*
 
 ## Planned Features
 
@@ -56,6 +56,7 @@ To request features open an [issue](https://github.com/Phoenix616/ChestShopNotif
 - [x] ~~Look up the sales of offline players~~ *done in v1.1.2*
 - [x] ~~Ignore ChestShop's Admin Shop~~ *done in v1.1.2*
 - [x] ~~History pagination~~ *done in v1.2*
+- [x] ~~SQLite support~~ *done in v1.3.4*
 - [ ] Auto updater & version checker
 - [ ] Translation system *(partially done in v1.1.2, you can set your own messages in the config)*
 
@@ -63,6 +64,6 @@ For all changes take a look at the [commits](https://github.com/Phoenix616/Chest
 
 ## Demonstration
 
-![Preview 1](https://media-elerium.cursecdn.com/attachments/128/945/Preview1.jpg)
+![Preview 1](https://media.forgecdn.net/attachments/128/945/Preview1.jpg)
 
-![Preview 2](https://media-elerium.cursecdn.com/attachments/128/946/Preview2.jpg)
+![Preview 2](https://media.forgecdn.net/attachments/128/946/Preview2.jpg)
