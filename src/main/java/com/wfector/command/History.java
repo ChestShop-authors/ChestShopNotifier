@@ -125,7 +125,8 @@ public class History extends BukkitRunnable {
             String msgString = plugin.getMessage("history-" + (entry.getType() == TransactionType.BUY ? "bought" : "sold") + (entry.isUnread() ? "" : "-read"),
                     "player", entry.getCustomerName() != null ? entry.getCustomerName() : "unknown",
                     "count", String.valueOf(entry.getQuantity()),
-                    "item", entry.getItemId().replace(" ", ""),
+                    "item", entry.getItemId(),
+                    "itemshort", entry.getItemId().replace(" ", ""),
                     "timeago", Time.getAgo(entry.getTime()),
                     "money", Economy.formatBalance(entry.getAmountPaid())
             );
