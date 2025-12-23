@@ -218,7 +218,11 @@ public class ChestShopNotifier extends JavaPlugin implements Listener {
 
         final Player p = e.getPlayer();
 
-        new LoginRunner(this, p.getUniqueId()).runTaskLaterAsynchronously(this, joinNotificationDelay * 20);
+        if(p.hasPermission("csn.user)) {
+            debug("User has permission to receive notifications.");
+            new LoginRunner(this, p.getUniqueId()).runTaskLaterAsynchronously(this, joinNotificationDelay * 20);
+        } 
+        }
     }
 
     @EventHandler
